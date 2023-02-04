@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.UIElements;
+using static DG.Tweening.DOTween;
 using Random = System.Random;
 
 [RequireComponent(typeof(Grid))]
@@ -114,6 +116,7 @@ public class MapController : MonoBehaviour
 
             overlayObject.transform.position = _grid.CellToWorld(new Vector3Int(position.x, position.y, 0));
             overlayObject.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+            overlayObject.DOColor(new Color(1f, 1f, 1f, 0.5f), 0.6f).SetLoops(-1, LoopType.Yoyo);
         }
     }
 
