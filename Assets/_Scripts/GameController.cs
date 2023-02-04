@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Random = System.Random;
 
@@ -26,11 +27,11 @@ public class GameController : MonoBehaviour
     private sbyte _playerTurn = 0;
 
     private Player[] _players;
-    
+
     public int MapWidth = 40;
     public int MapHeight = 20;
-    public Vector2Int[] PlayerStartPositions; 
-    
+    public Vector2Int[] PlayerStartPositions;
+
     // Scene references
     public MapController MapController;
 
@@ -38,7 +39,7 @@ public class GameController : MonoBehaviour
     void Start()
     {
         MapController.OnHexCellClicked += OnTileClicked;
-        
+
         _random = new Random();
         InitMap();
         InitializePlayers();
@@ -55,7 +56,10 @@ public class GameController : MonoBehaviour
         if (_areTilesDirty)
         {
             _areTilesDirty = false;
-            MapController.SetMap(_tiles, new []{ new Vector2Int(_random.Next(MapWidth), _random.Next(MapHeight)), new Vector2Int(3, 4)});
+            HashSet<Vector2Int> playerTiles = giveValidTiles(_playerTurn);
+            //List<Vector2Int> playerTilesList = playerTiles.ToList();
+            MapController.SetMap(_tiles, playerTiles);
+            //MapController.SetMap(_tiles, new[] { new Vector2Int(_random.Next(MapWidth), _random.Next(MapHeight)), new Vector2Int(3, 4) });
         }
     }
 
@@ -66,6 +70,50 @@ public class GameController : MonoBehaviour
         _areTilesDirty = true;
 
         NextTurn();
+    }
+
+    private HashSet<Vector2Int> giveValidTiles(int playerID)
+    {
+        HashSet<Vector2Int> validTiles = new HashSet<Vector2Int>();
+        for(int i = 0; i < MapWidth; i++) // Adds valid tiles
+        {
+            for(int j = 0; j < MapHeight; j++)
+            {
+                if(_tiles[i,j].PlayerId == _playerTurn){
+                    if(i%2 == 0) // Not an offset column
+                    {
+                        validTiles.Add(new Vector2Int(i - 1, j - 1)); // Lower left tile
+                        validTiles.Add(new Vector2Int(i - 1, j)); // Upper left tile
+                        validTiles.Add(new Vector2Int(i, j - 1)); // Tile below
+                        validTiles.Add(new Vector2Int(i, j + 1)); // Tile above
+                        validTiles.Add(new Vector2Int(i + 1, j - 1)); // Lower right tile
+                        validTiles.Add(new Vector2Int(i + 1, j)); // Upper right tile
+                    }
+                    else // Offset column
+                    {
+                        validTiles.Add(new Vector2Int(i - 1, j)); // Lower left tile
+                        validTiles.Add(new Vector2Int(i - 1, j + 1)); // Upper left tile
+                        validTiles.Add(new Vector2Int(i, j - 1)); // Tile below
+                        validTiles.Add(new Vector2Int(i, j + 1)); // Tile above
+                        validTiles.Add(new Vector2Int(i + 1, j)); // Lower right tile
+                        validTiles.Add(new Vector2Int(i + 1, j + 1)); // Upper right tile
+                    }
+                    
+                }
+            }
+        }
+
+        for (int i = 0; i < MapWidth; i++) // Loops to remove occupied tiles
+        {
+            for (int j = 0; j < MapHeight; j++)
+            {
+                if (_tiles[i, j].PlayerId == _playerTurn)
+                {
+                    validTiles.Remove(new Vector2Int(i, j));
+                }
+            }
+        }
+        return validTiles;
     }
     
     private void InitMap()
