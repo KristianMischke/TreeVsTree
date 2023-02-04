@@ -62,10 +62,10 @@ public class GameController : MonoBehaviour
         if (_areTilesDirty)
         {
             _areTilesDirty = false;
-            HashSet<Vector2Int> playerTiles = giveValidTiles(_playerTurn);
+            _playerTiles = giveValidTiles(_playerTurn);
             //List<Vector2Int> playerTilesList = playerTiles.ToList();
             //MapController.SetMap(_tiles, findConnectedRoots(PlayerStartPositions[_playerTurn], _playerTurn)); // Used for testing, highlights connected roots
-            MapController.SetMap(_tiles, playerTiles);
+            MapController.SetMap(_tiles, _playerTiles);
             //MapController.SetMap(_tiles, new[] { new Vector2Int(_random.Next(MapWidth), _random.Next(MapHeight)), new Vector2Int(3, 4) });
         }
     }
