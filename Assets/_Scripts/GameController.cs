@@ -23,6 +23,7 @@ public class GameController : MonoBehaviour
 
     private int _tilesForVictory = 20;
     private int _turnNumber = 0;
+    private int _movesThisTurn;
 
     private sbyte _numPlayers = 2;
     private sbyte _playerTurn = 0;
@@ -49,6 +50,8 @@ public class GameController : MonoBehaviour
         _random = new Random();
         MapController.GetGameStateFromTilemap(out _tiles, out _zeroIsOddColumn);
         InitializePlayers();
+
+        _movesThisTurn = _players[_playerTurn].NumMoves;
     }
 
     private void OnDestroy()
@@ -83,7 +86,11 @@ public class GameController : MonoBehaviour
         PlayerWon = (sbyte) CheckVictory();
 
         if(_areTilesDirty){
-            NextTurn();
+            _movesThisTurn--;
+
+            if(_movesThisTurn <= 0){
+                NextTurn();
+            }
         }
     }
 
@@ -253,6 +260,8 @@ public class GameController : MonoBehaviour
         if(_playerTurn >= _numPlayers){
             _playerTurn = 0;
         }
+
+        _movesThisTurn = _players[_playerTurn].NumMoves;
     }
 
     private Vector2Int? GetPlayerTreePosition(sbyte playerId)
