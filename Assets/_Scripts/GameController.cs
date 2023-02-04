@@ -8,7 +8,8 @@ using Random = System.Random;
 public class GameController : MonoBehaviour
 {
     private Random _random;
-    private RootTileData[,] _tiles;//TODO keep track of tiles in here
+    private RootTileData[,] _tiles;
+    private bool _zeroIsOddColumn = false;
     private bool _areTilesDirty = true;
 
     public struct Player
@@ -46,7 +47,7 @@ public class GameController : MonoBehaviour
         MapController.OnHexCellClicked += OnTileClicked;
 
         _random = new Random();
-        MapController.GetGameStateFromTilemap(out _tiles);
+        MapController.GetGameStateFromTilemap(out _tiles, out _zeroIsOddColumn);
         InitializePlayers();
     }
 
@@ -69,7 +70,7 @@ public class GameController : MonoBehaviour
         }
     }
 
-    private void OnTileClicked(Vector3Int position)
+    private void OnTileClicked(Vector2Int position)
     {
         _areTilesDirty = AttackTile(position);
         
@@ -80,7 +81,7 @@ public class GameController : MonoBehaviour
         }
     }
 
-    private bool AttackTile(Vector3Int position){
+    private bool AttackTile(Vector2Int position){
         bool validMove = true;
         
         Vector2Int positionxy = new Vector2Int(position.x, position.y);
@@ -121,8 +122,10 @@ public class GameController : MonoBehaviour
         {
             for(int j = 0; j < MapHeight; j++)
             {
-                if(_tiles[i,j].PlayerId == _playerTurn){
-                    if(i%2 == 0) // Not an offset column
+                if(_tiles[i,j].PlayerId == _playerTurn)
+                {
+                    var polarity = _zeroIsOddColumn ? 1 : 0;
+                    if(i%2 == polarity) // Not an offset column
                     {
                         validTiles.Add(new Vector2Int(i - 1, j - 1)); // Lower left tile
                         validTiles.Add(new Vector2Int(i - 1, j)); // Upper left tile

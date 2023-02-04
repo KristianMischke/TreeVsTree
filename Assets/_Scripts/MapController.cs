@@ -14,8 +14,8 @@ public class MapController : MonoBehaviour
     private static Dictionary<(sbyte, AboveTileType), TileBase> _aboveTileAssetMapping = new Dictionary<(sbyte, AboveTileType), TileBase>();
 
     private ReleasePool<SpriteRenderer> _tileOverlayReleasePool;
-    private readonly HashSet<Action<Vector3Int>> _onCellClickedCallbacks = new HashSet<Action<Vector3Int>>();
-    private readonly Dictionary<Vector2Int, SpriteRenderer> _overlayObjects = new Dictionary<Vector2Int, SpriteRenderer>();
+    private readonly HashSet<Action<Vector2Int>> _onCellClickedCallbacks = new HashSet<Action<Vector2Int>>();
+    private readonly Dictionary<Vector3Int, SpriteRenderer> _overlayObjects = new Dictionary<Vector3Int, SpriteRenderer>();
 
     private Grid _grid;
     private Camera _camera;
@@ -24,8 +24,13 @@ public class MapController : MonoBehaviour
     public Tilemap AboveTilemap;
     public GameObject HoverTile;
     public SpriteRenderer OverlayTilePrefab;
+    
+    public Vector3Int HexOffset = Vector3Int.zero;
 
-    public event Action<Vector3Int> OnHexCellClicked
+    public Vector2Int HexToGridPos(Vector3Int hexPos) => new Vector2Int(hexPos.y - HexOffset.y, hexPos.x - HexOffset.x);
+    public Vector3Int GridToHexPos(Vector2Int gridPos) => new Vector3Int(gridPos.y, gridPos.x, 0) + HexOffset;
+
+    public event Action<Vector2Int> OnHexCellClicked
     {
         add => _onCellClickedCallbacks.Add(value);
         remove => _onCellClickedCallbacks.Remove(value);
@@ -43,8 +48,11 @@ public class MapController : MonoBehaviour
             );
     }
 
-    public void GetGameStateFromTilemap(out RootTileData[,] tiles)
+    public void GetGameStateFromTilemap(out RootTileData[,] tiles, out bool zeroIsOddColumn)
     {
+        GroundTilemap.CompressBounds();
+        AboveTilemap.CompressBounds();
+        
         var bounds = GroundTilemap.cellBounds;
         if (AboveTilemap.cellBounds.min.x < bounds.min.x
             || AboveTilemap.cellBounds.min.y < bounds.min.y
@@ -54,36 +62,38 @@ public class MapController : MonoBehaviour
             Debug.LogWarning("Above tilemap bounds extend beyond Ground tilemap bounds!");
         }
 
-        Vector3Int offset = bounds.min;
+        HexOffset = bounds.min;
+        zeroIsOddColumn = bounds.min.y % 2 != 0;
+        
         tiles = new RootTileData[bounds.size.y, bounds.size.x];
         var rect = new RectInt(0, 0, tiles.GetLength(0), tiles.GetLength(1));
         foreach (var pos in rect.allPositionsWithin)
         {
-            tiles[pos.x, pos.y] = TileAssetToData(new Vector3Int(pos.y, pos.x, 0), offset);
+            tiles[pos.x, pos.y] = TileAssetToData(GridToHexPos(pos));
         }
     }
 
-    private RootTileData TileAssetToData(Vector3Int pos, Vector3Int offset)
+    private RootTileData TileAssetToData(Vector3Int hexPos)
     {
-        var groundTileBase = GroundTilemap.GetTile(pos + offset);
+        var groundTileBase = GroundTilemap.GetTile(hexPos);
         var groundType = GroundTileType.None;
         if (groundTileBase != null)
         {
             Enum.TryParse(groundTileBase.name, out groundType);
         }
         
-        var aboveTileBase = AboveTilemap.GetTile(pos + offset);
+        var aboveTileBase = AboveTilemap.GetTile(hexPos);
         var aboveType = AboveTileType.None;
         sbyte playerId = -1;
         if (aboveTileBase != null)
         {
-            var playerIdPattern = new Regex(@"^\w+(?<playerId>\d+)$");
+            var playerIdPattern = new Regex(@"^(?<tileName>\w+)(?<playerId>\d+)$");
             var match = playerIdPattern.Match(aboveTileBase.name);
             if (match.Success)
             {
                 sbyte.TryParse(match.Groups["playerId"].Value, out playerId);
             }
-            Enum.TryParse(aboveTileBase.name, out aboveType);
+            Enum.TryParse(match.Groups["tileName"].Value, out aboveType);
         }
         
         return new RootTileData
@@ -97,18 +107,18 @@ public class MapController : MonoBehaviour
     private void Update()
     {
         var mouseWorldPosition = _camera.ScreenToWorldPoint(Input.mousePosition);
-        var mouseCellPosition = _grid.WorldToCell(mouseWorldPosition);
+        var mouseHexPosition = _grid.WorldToCell(mouseWorldPosition);
         
-        var mouseGridCenterWorldPosition = _grid.CellToWorld(mouseCellPosition);
+        var mouseGridCenterWorldPosition = _grid.CellToWorld(mouseHexPosition);
         mouseGridCenterWorldPosition.z = 0;
         HoverTile.transform.position = mouseGridCenterWorldPosition;
 
         if (Input.GetMouseButtonUp((int)MouseButton.LeftMouse))
         {
-            Debug.Log($"Clicked {mouseCellPosition}");
+            Debug.Log($"Clicked {mouseHexPosition}");
             foreach (var callback in _onCellClickedCallbacks)
             {
-                callback.Invoke(new Vector3Int(mouseCellPosition.y, mouseCellPosition.x, 0));
+                callback.Invoke(HexToGridPos(mouseHexPosition));
             }
         }
     }
@@ -125,26 +135,28 @@ public class MapController : MonoBehaviour
         AboveTilemap.ClearAllTiles();
         AboveTilemap.SetTiles(positions, tileBases);
 
-        HashSet<Vector2Int> remainingOverlays = new HashSet<Vector2Int>(_overlayObjects.Keys);
+        HashSet<Vector3Int> remainingOverlays = new HashSet<Vector3Int>(_overlayObjects.Keys);
         
-        foreach (var position in tileOverlayPositions)
+        foreach (var gridPos in tileOverlayPositions)
         {
-            if (!_overlayObjects.TryGetValue(position, out var overlayObject))
+            var hexPosition = GridToHexPos(gridPos);
+            if (!_overlayObjects.TryGetValue(hexPosition, out var overlayObject))
             {
                 overlayObject = _tileOverlayReleasePool.Get();
-                _overlayObjects[position] = overlayObject;
+                _overlayObjects[hexPosition] = overlayObject;
             }
 
-            remainingOverlays.Remove(position);
-            overlayObject.transform.position = _grid.CellToWorld(new Vector3Int(position.y, position.x, 0));
+            remainingOverlays.Remove(hexPosition);
+            overlayObject.transform.position = _grid.CellToWorld(hexPosition);
             overlayObject.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+            overlayObject.DOKill();
             overlayObject.DOColor(new Color(1f, 1f, 1f, 0.5f), 0.6f).SetLoops(-1, LoopType.Yoyo);
         }
 
-        foreach (var position in remainingOverlays)
+        foreach (var hexPos in remainingOverlays)
         {
-            _tileOverlayReleasePool.Release(_overlayObjects[position]);
-            _overlayObjects.Remove(position);
+            _tileOverlayReleasePool.Release(_overlayObjects[hexPos]);
+            _overlayObjects.Remove(hexPos);
         }
     }
 
@@ -154,14 +166,12 @@ public class MapController : MonoBehaviour
         tileBases = new TileBase[tiles.Length];
 
         int i = 0;
-        for (int row = 0; row < tiles.GetLength(0); row++)
+        var rect = new RectInt(Vector2Int.zero, new Vector2Int(tiles.GetLength(0), tiles.GetLength(1))); 
+        foreach (var gridPos in rect.allPositionsWithin)
         {
-            for (int col = 0; col < tiles.GetLength(1); col++)
-            {
-                positions[i] = new Vector3Int(col, row, 0);
-                tileBases[i] = getAsset.Invoke(tiles[row, col]);
-                i++;
-            }
+            positions[i] = GridToHexPos(gridPos);
+            tileBases[i] = getAsset.Invoke(tiles[gridPos.x, gridPos.y]);
+            i++;
         }
     }
 
@@ -170,6 +180,9 @@ public class MapController : MonoBehaviour
         if (_groundTileAssetMapping.TryGetValue(tileData.GroundType, out var asset))
             return asset;
 
+        if (tileData.GroundType == GroundTileType.None)
+            return null;
+        
         asset = Resources.Load<TileBase>($"GroundTiles/{Enum.GetName(typeof(GroundTileType), tileData.GroundType)}");
         _groundTileAssetMapping[tileData.GroundType] = asset;
 
@@ -181,6 +194,9 @@ public class MapController : MonoBehaviour
         if (_aboveTileAssetMapping.TryGetValue((tileData.PlayerId, tileData.AboveType), out var asset))
             return asset;
 
+        if (tileData.AboveType == AboveTileType.None)
+            return null;
+        
         var suffix = tileData.PlayerId >= 0 ? tileData.PlayerId.ToString() : string.Empty;
         asset = Resources.Load<TileBase>($"AboveTiles/{Enum.GetName(typeof(AboveTileType), tileData.AboveType)}{suffix}");
         _aboveTileAssetMapping[(tileData.PlayerId, tileData.AboveType)] = asset;
