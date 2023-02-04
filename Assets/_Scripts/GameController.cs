@@ -60,6 +60,7 @@ public class GameController : MonoBehaviour
             _areTilesDirty = false;
             HashSet<Vector2Int> playerTiles = giveValidTiles(_playerTurn);
             //List<Vector2Int> playerTilesList = playerTiles.ToList();
+            //MapController.SetMap(_tiles, findConnectedRoots(PlayerStartPositions[_playerTurn], _playerTurn)); // Used for testing, highlights connected roots
             MapController.SetMap(_tiles, playerTiles);
             //MapController.SetMap(_tiles, new[] { new Vector2Int(_random.Next(MapWidth), _random.Next(MapHeight)), new Vector2Int(3, 4) });
         }
@@ -143,7 +144,74 @@ public class GameController : MonoBehaviour
         }
         return validTiles;
     }
-    
+    //Recursive function that catalogues all roots connected to a player's tree
+    private HashSet<Vector2Int> findConnectedRoots(Vector2Int position, int playerID, HashSet<Vector2Int> connectedTiles = null)
+    {
+        if(connectedTiles == null)
+        {
+            connectedTiles = new HashSet<Vector2Int>();
+        }
+        if (!connectedTiles.Contains(position))
+        {
+            connectedTiles.Add(position);
+            if(position.x % 2 == 0) // Not an offset column
+            {
+                if(_tiles[position.x - 1, position.y - 1].PlayerId == playerID)
+                {
+                    connectedTiles = findConnectedRoots(new Vector2Int(position.x - 1, position.y - 1), playerID, connectedTiles);
+                }
+                if (_tiles[position.x - 1, position.y].PlayerId == playerID)
+                {
+                    connectedTiles = findConnectedRoots(new Vector2Int(position.x - 1, position.y), playerID, connectedTiles);
+                }
+                if (_tiles[position.x, position.y - 1].PlayerId == playerID)
+                {
+                    connectedTiles = findConnectedRoots(new Vector2Int(position.x, position.y - 1), playerID, connectedTiles);
+                }
+                if (_tiles[position.x, position.y + 1].PlayerId == playerID)
+                {
+                    connectedTiles = findConnectedRoots(new Vector2Int(position.x, position.y + 1), playerID, connectedTiles);
+                }
+                if (_tiles[position.x + 1, position.y - 1].PlayerId == playerID)
+                {
+                    connectedTiles = findConnectedRoots(new Vector2Int(position.x + 1, position.y - 1), playerID, connectedTiles);
+                }
+                if (_tiles[position.x + 1, position.y].PlayerId == playerID)
+                {
+                    connectedTiles = findConnectedRoots(new Vector2Int(position.x + 1, position.y), playerID, connectedTiles);
+                }
+            }
+            else // offset column
+            {
+                if (_tiles[position.x - 1, position.y].PlayerId == playerID)
+                {
+                    connectedTiles = findConnectedRoots(new Vector2Int(position.x - 1, position.y), playerID, connectedTiles);
+                }
+                if (_tiles[position.x - 1, position.y + 1].PlayerId == playerID)
+                {
+                    connectedTiles = findConnectedRoots(new Vector2Int(position.x - 1, position.y + 1), playerID, connectedTiles);
+                }
+                if (_tiles[position.x, position.y - 1].PlayerId == playerID)
+                {
+                    connectedTiles = findConnectedRoots(new Vector2Int(position.x, position.y - 1), playerID, connectedTiles);
+                }
+                if (_tiles[position.x, position.y + 1].PlayerId == playerID)
+                {
+                    connectedTiles = findConnectedRoots(new Vector2Int(position.x, position.y + 1), playerID, connectedTiles);
+                }
+                if (_tiles[position.x + 1, position.y].PlayerId == playerID)
+                {
+                    connectedTiles = findConnectedRoots(new Vector2Int(position.x + 1, position.y), playerID, connectedTiles);
+                }
+                if (_tiles[position.x + 1, position.y + 1].PlayerId == playerID)
+                {
+                    connectedTiles = findConnectedRoots(new Vector2Int(position.x + 1, position.y + 1), playerID, connectedTiles);
+                }
+            }
+        }
+        return connectedTiles;
+    }
+
     private void InitMap()
     {
         _tiles = new RootTileData[MapWidth, MapHeight];
