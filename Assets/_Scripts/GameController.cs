@@ -135,7 +135,7 @@ public class GameController : MonoBehaviour
         {
             for (int j = 0; j < MapHeight; j++)
             {
-                if (_tiles[i, j].PlayerId == _playerTurn)
+                if (_tiles[i, j].PlayerId == _playerTurn || _tiles[i,j].GroundType == GroundTileType.MountainTile)
                 {
                     validTiles.Remove(new Vector2Int(i, j));
                 }
@@ -154,7 +154,7 @@ public class GameController : MonoBehaviour
                 _tiles[row, col] = new RootTileData
                 {
                     PlayerId = -1,
-                    GroundType = (GroundTileType)_random.Next((int)AboveTileType.MAX)
+                    GroundType = (GroundTileType)_random.Next((int)GroundTileType.MAX)
                 };
             }
         }
