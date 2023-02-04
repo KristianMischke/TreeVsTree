@@ -157,7 +157,7 @@ public class GameController : MonoBehaviour
         }
         return validTiles;
     }
-    //Recursive function that catalogues all roots connected to a player's tree
+    //Recursive function that catalogues all roots connected to a player's tree. Initial position value should be position of the players tree
     private HashSet<Vector2Int> findConnectedRoots(Vector2Int position, int playerID, HashSet<Vector2Int> connectedTiles = null)
     {
         if(connectedTiles == null)
