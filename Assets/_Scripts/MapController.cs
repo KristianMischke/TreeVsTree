@@ -2,30 +2,42 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using UnityEngine.UIElements;
 using Random = System.Random;
 
 [RequireComponent(typeof(Grid))]
 public class MapController : MonoBehaviour
 {
-    private Dictionary<GroundTileType, TileBase> _groundTileAssetMapping = new Dictionary<GroundTileType, TileBase>();
-    private Dictionary<(sbyte, AboveTileType), TileBase> _aboveTileAssetMapping = new Dictionary<(sbyte, AboveTileType), TileBase>();
+    private static Dictionary<GroundTileType, TileBase> _groundTileAssetMapping = new Dictionary<GroundTileType, TileBase>();
+    private static Dictionary<(sbyte, AboveTileType), TileBase> _aboveTileAssetMapping = new Dictionary<(sbyte, AboveTileType), TileBase>();
+
+    private HashSet<Action<Vector3Int>> _onCellClickedCallbacks = new HashSet<Action<Vector3Int>>();
 
     private Grid _grid;
     private RootTileData[,] _tiles;
     private Random _random;
+    private Camera _camera;
 
     public Tilemap GroundTilemap;
     public Tilemap AboveTilemap;
+    public GameObject HoverTile;
     
     public int MapWidth = 40;
     public int MapHeight = 20;
     public Vector2Int[] PlayerStartPositions; 
+    
+    public event Action<Vector3Int> OnCellClicked
+    {
+        add => _onCellClickedCallbacks.Add(value);
+        remove => _onCellClickedCallbacks.Remove(value);
+    }
 
     private void Awake()
     {
         _grid = GetComponent<Grid>();
         _tiles = new RootTileData[MapWidth, MapHeight];
         _random = new Random();
+        _camera = Camera.main;
         
         InitMap();
         
@@ -38,6 +50,25 @@ public class MapController : MonoBehaviour
         GetPositionsAndTiles(GetAboveAsset, out positions, out tileBases);
         AboveTilemap.ClearAllTiles();
         AboveTilemap.SetTiles(positions, tileBases);
+    }
+
+    private void Update()
+    {
+        var mouseWorldPosition = _camera.ScreenToWorldPoint(Input.mousePosition);
+        var mouseCellPosition = _grid.WorldToCell(mouseWorldPosition);
+        
+        var mouseGridCenterWorldPosition = _grid.CellToWorld(mouseCellPosition);
+        mouseGridCenterWorldPosition.z = 0;
+        HoverTile.transform.position = mouseGridCenterWorldPosition;
+
+        if (Input.GetMouseButtonUp((int)MouseButton.LeftMouse))
+        {
+            Debug.Log($"Clicked {mouseCellPosition}");
+            foreach (var callback in _onCellClickedCallbacks)
+            {
+                callback.Invoke(mouseCellPosition);
+            }
+        }
     }
 
     private void InitMap()
