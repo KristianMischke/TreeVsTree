@@ -61,6 +61,12 @@ public class GameController : MonoBehaviour
     {
         if (_areTilesDirty)
         {
+            var victoryCheck = CheckVictory();
+            if (victoryCheck != -1)
+            {
+                Debug.Log($"PLAYER {victoryCheck} WON");
+            }
+            
             _areTilesDirty = false;
             _playerTiles = giveValidTiles(_playerTurn);
             //List<Vector2Int> playerTilesList = playerTiles.ToList();
