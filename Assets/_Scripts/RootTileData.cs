@@ -1,9 +1,18 @@
 ﻿
-public enum RootTileType
+public enum GroundTileType
 {
-    TestTile,
-    TestTileYellow,
+    TestTile,           // TODO: remove 
+    TestTileYellow,     // TODO: remove
+    
     GrassTile,
+    
+    MAX
+}
+
+public enum AboveTileType
+{
+    Tree,
+    TreeRoots,
     
     MAX
 }
@@ -15,5 +24,6 @@ public struct RootTileData
     /// <summary>id of the owner player or -1 for no ownership</summary>
     public sbyte PlayerId;
 
-    public RootTileType TileType;
+    public GroundTileType GroundType;
+    public AboveTileType AboveType;
 }
