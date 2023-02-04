@@ -5,7 +5,6 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.UIElements;
 using static DG.Tweening.DOTween;
-using Random = System.Random;
 
 [RequireComponent(typeof(Grid))]
 public class MapController : MonoBehaviour
@@ -18,19 +17,13 @@ public class MapController : MonoBehaviour
     private readonly Dictionary<Vector2Int, SpriteRenderer> _overlayObjects = new Dictionary<Vector2Int, SpriteRenderer>();
 
     private Grid _grid;
-    private RootTileData[,] _tiles;
-    private Random _random;
     private Camera _camera;
     
     public Tilemap GroundTilemap;
     public Tilemap AboveTilemap;
     public GameObject HoverTile;
     public SpriteRenderer OverlayTilePrefab;
-    
-    public int MapWidth = 40;
-    public int MapHeight = 20;
-    public Vector2Int[] PlayerStartPositions; 
-    
+
     public event Action<Vector3Int> OnHexCellClicked
     {
         add => _onCellClickedCallbacks.Add(value);
@@ -40,15 +33,13 @@ public class MapController : MonoBehaviour
     private void Awake()
     {
         _grid = GetComponent<Grid>();
-        _tiles = new RootTileData[MapWidth, MapHeight];
-        _random = new Random();
         _camera = Camera.main;
 
-        _tileOverlayReleasePool = new ReleasePool<SpriteRenderer>(() => Instantiate(OverlayTilePrefab));
-        
-        InitMap();
-        
-        SetMap(_tiles, new []{ new Vector2Int(0, 0), new Vector2Int(3, 4)});
+        _tileOverlayReleasePool = new ReleasePool<SpriteRenderer>(
+            () => Instantiate(OverlayTilePrefab),
+            sr => sr.gameObject.SetActive(true),
+            sr => sr.gameObject.SetActive(false)
+            );
     }
 
     private void Update()
@@ -65,33 +56,8 @@ public class MapController : MonoBehaviour
             Debug.Log($"Clicked {mouseCellPosition}");
             foreach (var callback in _onCellClickedCallbacks)
             {
-                callback.Invoke(mouseCellPosition);
+                callback.Invoke(new Vector3Int(mouseCellPosition.y, mouseCellPosition.x, 0));
             }
-        }
-    }
-
-    private void InitMap()
-    {
-        // TODO:  initializing map should probably be in game controller
-        
-        for (int row = 0; row < _tiles.GetLength(0); row++)
-        {
-            for (int col = 0; col < _tiles.GetLength(1); col++)
-            {
-                _tiles[row, col] = new RootTileData
-                {
-                    PlayerId = -1,
-                    GroundType = (GroundTileType)_random.Next((int)AboveTileType.MAX)
-                };
-            }
-        }
-        
-        // place player trees
-        sbyte i = 0;
-        foreach (var position in PlayerStartPositions)
-        {
-            _tiles[position.x, position.y].PlayerId = i++;
-            _tiles[position.x, position.y].AboveType = AboveTileType.Tree;
         }
     }
 
@@ -107,16 +73,26 @@ public class MapController : MonoBehaviour
         AboveTilemap.ClearAllTiles();
         AboveTilemap.SetTiles(positions, tileBases);
 
+        HashSet<Vector2Int> remainingOverlays = new HashSet<Vector2Int>(_overlayObjects.Keys);
+        
         foreach (var position in tileOverlayPositions)
         {
             if (!_overlayObjects.TryGetValue(position, out var overlayObject))
             {
                 overlayObject = _tileOverlayReleasePool.Get();
+                _overlayObjects[position] = overlayObject;
             }
 
-            overlayObject.transform.position = _grid.CellToWorld(new Vector3Int(position.x, position.y, 0));
+            remainingOverlays.Remove(position);
+            overlayObject.transform.position = _grid.CellToWorld(new Vector3Int(position.y, position.x, 0));
             overlayObject.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
             overlayObject.DOColor(new Color(1f, 1f, 1f, 0.5f), 0.6f).SetLoops(-1, LoopType.Yoyo);
+        }
+
+        foreach (var position in remainingOverlays)
+        {
+            _tileOverlayReleasePool.Release(_overlayObjects[position]);
+            _overlayObjects.Remove(position);
         }
     }
 
