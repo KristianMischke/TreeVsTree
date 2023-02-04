@@ -20,7 +20,7 @@ public class GameController : MonoBehaviour
         public int NumMoves;
     }
 
-    private int _tilesForVictory;
+    private int _tilesForVictory = 20;
     private int _turnNumber = 0;
 
     private sbyte _numPlayers = 2;
@@ -34,6 +34,8 @@ public class GameController : MonoBehaviour
 
     // Scene references
     public MapController MapController;
+
+    public sbyte PlayerWon;
 
     // Start is called before the first frame update
     void Start()
@@ -65,11 +67,37 @@ public class GameController : MonoBehaviour
 
     private void OnTileClicked(Vector3Int position)
     {
-        _tiles[position.x, position.y].PlayerId = _playerTurn;
-        _tiles[position.x, position.y].AboveType = AboveTileType.TreeRoots;
-        _areTilesDirty = true;
+        _areTilesDirty = AttackTile(position);
+        
+        PlayerWon = (sbyte) CheckVictory();
 
-        NextTurn();
+        if(_areTilesDirty){
+            NextTurn();
+        }
+    }
+
+    private bool AttackTile(Vector3Int position){
+        bool validMove = true;
+        
+        //if empty tile, fill in with this player's roots
+        if(_tiles[position.x, position.y].PlayerId == -1)
+        {        
+            _tiles[position.x, position.y].PlayerId = _playerTurn;
+            _tiles[position.x, position.y].AboveType = AboveTileType.TreeRoots;
+        }
+        //else, if another player's roots, remove them
+        else if(_tiles[position.x, position.y].PlayerId != _playerTurn)
+        {
+             _tiles[position.x, position.y].PlayerId = -1;
+            _tiles[position.x, position.y].AboveType = AboveTileType.MAX;
+        }
+        else{
+            validMove = false;
+        }
+
+        _areTilesDirty = validMove;
+
+        return validMove;
     }
 
     private HashSet<Vector2Int> giveValidTiles(int playerID)
@@ -161,7 +189,7 @@ public class GameController : MonoBehaviour
         }
     }
 
-    private int CheckVictory(){
+    private int CheckVictory(){//TODO test to make sure this works
         int victory = -1;
         
         foreach(Player player in _players){
@@ -169,7 +197,15 @@ public class GameController : MonoBehaviour
                 victory = player.Id;
             }
         }
-        // TODO else case for taking base tree and way to check if base tree taken
+        //else case for taking base tree and way to check if base tree taken
+        if(victory == -1){
+            foreach (var position in PlayerStartPositions)
+            {
+                if(_tiles[position.x, position.y].PlayerId == -1){
+                    victory = _playerTurn;//operates under the assumtion that the attacking player immediately wins the game upon capturing enemy tree
+                }
+            }
+        }
 
         return victory;
     }
