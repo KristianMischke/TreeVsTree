@@ -64,6 +64,8 @@ public class GameController : MonoBehaviour
         _tiles[position.x, position.y].PlayerId = _playerTurn;
         _tiles[position.x, position.y].AboveType = AboveTileType.TreeRoots;
         _areTilesDirty = true;
+
+        NextTurn();
     }
     
     private void InitMap()
