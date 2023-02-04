@@ -37,6 +37,8 @@ public class GameController : MonoBehaviour
 
     public sbyte PlayerWon;
 
+    private HashSet<Vector2Int> _playerTiles;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -58,9 +60,9 @@ public class GameController : MonoBehaviour
         if (_areTilesDirty)
         {
             _areTilesDirty = false;
-            HashSet<Vector2Int> playerTiles = giveValidTiles(_playerTurn);
-            //List<Vector2Int> playerTilesList = playerTiles.ToList();
-            MapController.SetMap(_tiles, playerTiles);
+            _playerTiles = giveValidTiles(_playerTurn);
+            //List<Vector2Int> playerTilesList = _playerTiles.ToList();
+            MapController.SetMap(_tiles, _playerTiles);
             //MapController.SetMap(_tiles, new[] { new Vector2Int(_random.Next(MapWidth), _random.Next(MapHeight)), new Vector2Int(3, 4) });
         }
     }
@@ -79,19 +81,29 @@ public class GameController : MonoBehaviour
     private bool AttackTile(Vector3Int position){
         bool validMove = true;
         
-        //if empty tile, fill in with this player's roots
-        if(_tiles[position.x, position.y].PlayerId == -1)
-        {        
-            _tiles[position.x, position.y].PlayerId = _playerTurn;
-            _tiles[position.x, position.y].AboveType = AboveTileType.TreeRoots;
-        }
-        //else, if another player's roots, remove them
-        else if(_tiles[position.x, position.y].PlayerId != _playerTurn)
+        Vector2Int positionxy = new Vector2Int(position.x, position.y);
+
+        if(_playerTiles.Contains(positionxy))
         {
-             _tiles[position.x, position.y].PlayerId = -1;
-            _tiles[position.x, position.y].AboveType = AboveTileType.MAX;
+            //if empty tile, fill in with this player's roots
+            if(_tiles[position.x, position.y].PlayerId == -1)
+            {        
+                _tiles[position.x, position.y].PlayerId = _playerTurn;
+                _tiles[position.x, position.y].AboveType = AboveTileType.TreeRoots;
+            }
+            //else, if another player's roots, remove them
+            else if(_tiles[position.x, position.y].PlayerId != _playerTurn)
+            {
+                _tiles[position.x, position.y].PlayerId = -1;
+                _tiles[position.x, position.y].AboveType = AboveTileType.MAX;
+            }
+            else
+            {
+                validMove = false;
+            }
         }
-        else{
+        else
+        {
             validMove = false;
         }
 
