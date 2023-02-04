@@ -113,7 +113,7 @@ public class MapController : MonoBehaviour
         }
     }
 
-    public void SetMap(RootTileData[,] tiles, Vector2Int[] tileOverlayPositions)
+    public void SetMap(RootTileData[,] tiles, IEnumerable<Vector2Int> tileOverlayPositions)
     {
         // update ground tilemap
         GetPositionsAndTiles(tiles, GetGroundAsset, out var positions, out var tileBases);

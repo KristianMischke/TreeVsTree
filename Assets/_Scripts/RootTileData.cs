@@ -7,6 +7,8 @@ public enum GroundTileType
     TestTileYellow,     // TODO: remove
     
     GrassTile,
+    WaterTile,
+    MountainTile,
     
     MAX
 }
