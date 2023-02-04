@@ -19,7 +19,6 @@ public enum GroundTileType
 public enum AboveTileType
 {
     None,
-    
     Tree,
     TreeRoots,
     TreeRootsDead,
