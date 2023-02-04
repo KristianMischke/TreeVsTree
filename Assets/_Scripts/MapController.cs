@@ -11,22 +11,25 @@ public class MapController : MonoBehaviour
     private static Dictionary<GroundTileType, TileBase> _groundTileAssetMapping = new Dictionary<GroundTileType, TileBase>();
     private static Dictionary<(sbyte, AboveTileType), TileBase> _aboveTileAssetMapping = new Dictionary<(sbyte, AboveTileType), TileBase>();
 
-    private HashSet<Action<Vector3Int>> _onCellClickedCallbacks = new HashSet<Action<Vector3Int>>();
+    private ReleasePool<SpriteRenderer> _tileOverlayReleasePool;
+    private readonly HashSet<Action<Vector3Int>> _onCellClickedCallbacks = new HashSet<Action<Vector3Int>>();
+    private readonly Dictionary<Vector2Int, SpriteRenderer> _overlayObjects = new Dictionary<Vector2Int, SpriteRenderer>();
 
     private Grid _grid;
     private RootTileData[,] _tiles;
     private Random _random;
     private Camera _camera;
-
+    
     public Tilemap GroundTilemap;
     public Tilemap AboveTilemap;
     public GameObject HoverTile;
+    public SpriteRenderer OverlayTilePrefab;
     
     public int MapWidth = 40;
     public int MapHeight = 20;
     public Vector2Int[] PlayerStartPositions; 
     
-    public event Action<Vector3Int> OnCellClicked
+    public event Action<Vector3Int> OnHexCellClicked
     {
         add => _onCellClickedCallbacks.Add(value);
         remove => _onCellClickedCallbacks.Remove(value);
@@ -38,18 +41,12 @@ public class MapController : MonoBehaviour
         _tiles = new RootTileData[MapWidth, MapHeight];
         _random = new Random();
         _camera = Camera.main;
+
+        _tileOverlayReleasePool = new ReleasePool<SpriteRenderer>(() => Instantiate(OverlayTilePrefab));
         
         InitMap();
         
-        // update ground tilemap
-        GetPositionsAndTiles(GetGroundAsset, out var positions, out var tileBases);
-        GroundTilemap.ClearAllTiles();
-        GroundTilemap.SetTiles(positions, tileBases);
-        
-        // update above tilemap
-        GetPositionsAndTiles(GetAboveAsset, out positions, out tileBases);
-        AboveTilemap.ClearAllTiles();
-        AboveTilemap.SetTiles(positions, tileBases);
+        SetMap(_tiles, new []{ new Vector2Int(0, 0), new Vector2Int(3, 4)});
     }
 
     private void Update()
@@ -96,18 +93,42 @@ public class MapController : MonoBehaviour
         }
     }
 
-    private void GetPositionsAndTiles(Func<RootTileData, TileBase> getAsset, out Vector3Int[] positions, out TileBase[] tileBases)
+    public void SetMap(RootTileData[,] tiles, Vector2Int[] tileOverlayPositions)
     {
-        positions = new Vector3Int[_tiles.Length];
-        tileBases = new TileBase[_tiles.Length];
+        // update ground tilemap
+        GetPositionsAndTiles(tiles, GetGroundAsset, out var positions, out var tileBases);
+        GroundTilemap.ClearAllTiles();
+        GroundTilemap.SetTiles(positions, tileBases);
+        
+        // update above tilemap
+        GetPositionsAndTiles(tiles, GetAboveAsset, out positions, out tileBases);
+        AboveTilemap.ClearAllTiles();
+        AboveTilemap.SetTiles(positions, tileBases);
+
+        foreach (var position in tileOverlayPositions)
+        {
+            if (!_overlayObjects.TryGetValue(position, out var overlayObject))
+            {
+                overlayObject = _tileOverlayReleasePool.Get();
+            }
+
+            overlayObject.transform.position = _grid.CellToWorld(new Vector3Int(position.x, position.y, 0));
+            overlayObject.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
+        }
+    }
+
+    private void GetPositionsAndTiles(RootTileData[,] tiles, Func<RootTileData, TileBase> getAsset, out Vector3Int[] positions, out TileBase[] tileBases)
+    {
+        positions = new Vector3Int[tiles.Length];
+        tileBases = new TileBase[tiles.Length];
 
         int i = 0;
-        for (int row = 0; row < _tiles.GetLength(0); row++)
+        for (int row = 0; row < tiles.GetLength(0); row++)
         {
-            for (int col = 0; col < _tiles.GetLength(1); col++)
+            for (int col = 0; col < tiles.GetLength(1); col++)
             {
                 positions[i] = new Vector3Int(col, row, 0);
-                tileBases[i] = getAsset.Invoke(_tiles[row, col]);
+                tileBases[i] = getAsset.Invoke(tiles[row, col]);
                 i++;
             }
         }

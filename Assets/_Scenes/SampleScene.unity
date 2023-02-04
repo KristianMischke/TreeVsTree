@@ -226,7 +226,7 @@ TilemapRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_ChunkSize: {x: 32, y: 32, z: 32}
-  m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
+  m_ChunkCullingBounds: {x: 0.012820542, y: 0, z: 0}
   m_MaxChunkCount: 16
   m_MaxFrameAge: 16
   m_SortOrder: 0
@@ -1838,7 +1838,7 @@ TilemapRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 1
   m_ChunkSize: {x: 32, y: 32, z: 32}
-  m_ChunkCullingBounds: {x: 0, y: 0, z: 0}
+  m_ChunkCullingBounds: {x: 0.012820542, y: 0, z: 0}
   m_MaxChunkCount: 16
   m_MaxFrameAge: 16
   m_SortOrder: 0
@@ -3258,6 +3258,7 @@ MonoBehaviour:
   GroundTilemap: {fileID: 128765444}
   AboveTilemap: {fileID: 1474280004}
   HoverTile: {fileID: 1012289315}
+  OverlayTilePrefab: {fileID: 8214417220688446059, guid: 81f97d5f462c4534eb2c93b102376740, type: 3}
   MapWidth: 40
   MapHeight: 20
   PlayerStartPositions:
