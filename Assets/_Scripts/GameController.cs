@@ -13,7 +13,7 @@ public class GameController : MonoBehaviour
 
     public struct Player
     {
-        public int Id;
+        public sbyte Id;
         public int TilesControled;
 
         /// <summary>Number of moves that a player can make in a single turn</summary>
@@ -28,9 +28,10 @@ public class GameController : MonoBehaviour
 
     private Player[] _players;
 
-    public int MapWidth = 40;
-    public int MapHeight = 20;
-    public Vector2Int[] PlayerStartPositions;
+    public int MapWidth => _tiles.GetLength(0);
+    public int MapHeight => _tiles.GetLength(1);
+    public RectInt.PositionEnumerator AllTilesIter =>
+        new RectInt(Vector2Int.zero, new Vector2Int(MapWidth, MapHeight)).allPositionsWithin;
 
     // Scene references
     public MapController MapController;
@@ -46,7 +47,6 @@ public class GameController : MonoBehaviour
 
         _random = new Random();
         MapController.GetGameStateFromTilemap(out _tiles);
-        // InitMap();
         InitializePlayers();
     }
 
@@ -156,35 +156,11 @@ public class GameController : MonoBehaviour
         }
         return validTiles;
     }
-    
-    private void InitMap()
-    {
-        _tiles = new RootTileData[MapWidth, MapHeight];
-        for (int row = 0; row < _tiles.GetLength(0); row++)
-        {
-            for (int col = 0; col < _tiles.GetLength(1); col++)
-            {
-                _tiles[row, col] = new RootTileData
-                {
-                    PlayerId = -1,
-                    GroundType = (GroundTileType)_random.Next((int)GroundTileType.MAX)
-                };
-            }
-        }
-        
-        // place player trees
-        sbyte i = 0;
-        foreach (var position in PlayerStartPositions)
-        {
-            _tiles[position.x, position.y].PlayerId = i++;
-            _tiles[position.x, position.y].AboveType = AboveTileType.Tree;
-        }
-    }
 
     private void InitializePlayers(){
         _players = new Player[_numPlayers];
 
-        for(int i = 0; i < _numPlayers; i++){
+        for(sbyte i = 0; i < _numPlayers; i++){
             _players[i] = new Player
             {
                 Id = i,
@@ -202,8 +178,21 @@ public class GameController : MonoBehaviour
         }
     }
 
-    private int CheckVictory(){//TODO test to make sure this works
-        int victory = -1;
+    private Vector2Int? GetPlayerTreePosition(sbyte playerId)
+    {
+        foreach (var pos in AllTilesIter)
+        {
+            if (_tiles[pos.x, pos.y].PlayerId == playerId && _tiles[pos.x, pos.y].AboveType == AboveTileType.Tree)
+            {
+                return pos;
+            }
+        }
+
+        return null;
+    }
+
+    private sbyte CheckVictory(){//TODO test to make sure this works
+        sbyte victory = -1;
         
         foreach(Player player in _players){
             if(player.TilesControled >= _tilesForVictory){
@@ -211,12 +200,21 @@ public class GameController : MonoBehaviour
             }
         }
         //else case for taking base tree and way to check if base tree taken
-        if(victory == -1){
-            foreach (var position in PlayerStartPositions)
+        if(victory == -1)
+        {
+            HashSet<sbyte> remainingPlayers = new HashSet<sbyte>();
+            for (sbyte i = 0; i < _numPlayers; i++)
             {
-                if(_tiles[position.x, position.y].PlayerId == -1){
-                    victory = _playerTurn;//operates under the assumtion that the attacking player immediately wins the game upon capturing enemy tree
+                var treePosition = GetPlayerTreePosition(i);
+                if (treePosition != null)
+                {
+                    remainingPlayers.Add(i);
                 }
+            }
+
+            if (remainingPlayers.Count == 1)
+            {
+                victory = remainingPlayers.First();
             }
         }
 
