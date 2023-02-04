@@ -1,6 +1,8 @@
 ﻿
 public enum GroundTileType
 {
+    None,
+    
     TestTile,           // TODO: remove 
     TestTileYellow,     // TODO: remove
     
@@ -13,6 +15,8 @@ public enum GroundTileType
 
 public enum AboveTileType
 {
+    None,
+    
     Tree,
     TreeRoots,
     
