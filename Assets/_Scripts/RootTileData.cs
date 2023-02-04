@@ -3,13 +3,16 @@ public enum GroundTileType
 {
     None,
     
+    DesertTile,
+    GrassTile,
+    MesaTileDark,
+    MesaTileLight,
+    MountainTile,
+    RichSoilTile,
     TestTile,           // TODO: remove 
     TestTileYellow,     // TODO: remove
-    
-    GrassTile,
     WaterTile,
-    MountainTile,
-    
+
     MAX
 }
 
@@ -19,6 +22,7 @@ public enum AboveTileType
     
     Tree,
     TreeRoots,
+    TreeRootsDead,
     
     MAX
 }
