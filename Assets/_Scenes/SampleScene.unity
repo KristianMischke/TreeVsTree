@@ -169,7 +169,7 @@ MonoBehaviour:
   MapWidth: 40
   MapHeight: 20
   PlayerStartPositions:
-  - {x: 3, y: 4}
+  - {x: 0, y: 4}
   - {x: 20, y: 15}
   MapController: {fileID: 2073538829}
 --- !u!1 &128765441

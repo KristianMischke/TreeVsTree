@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -42,6 +43,57 @@ public class MapController : MonoBehaviour
             );
     }
 
+    public void GetGameStateFromTilemap(out RootTileData[,] tiles)
+    {
+        var bounds = GroundTilemap.cellBounds;
+        if (AboveTilemap.cellBounds.min.x < bounds.min.x
+            || AboveTilemap.cellBounds.min.y < bounds.min.y
+            || AboveTilemap.cellBounds.max.x < bounds.max.x
+            || AboveTilemap.cellBounds.max.y < bounds.max.y)
+        {
+            Debug.LogWarning("Above tilemap bounds extend beyond Ground tilemap bounds!");
+        }
+
+        Vector3Int offset = bounds.min;
+        tiles = new RootTileData[bounds.size.y, bounds.size.x];
+        var rect = new RectInt(0, 0, tiles.GetLength(0), tiles.GetLength(1));
+        foreach (var pos in rect.allPositionsWithin)
+        {
+            tiles[pos.x, pos.y] = TileAssetToData(new Vector3Int(pos.y, pos.x, 0), offset);
+        }
+    }
+
+    private RootTileData TileAssetToData(Vector3Int pos, Vector3Int offset)
+    {
+        var groundTileBase = GroundTilemap.GetTile(pos + offset);
+        var groundType = GroundTileType.None;
+        if (groundTileBase != null)
+        {
+            Enum.TryParse(groundTileBase.name, out groundType);
+        }
+        
+        var aboveTileBase = AboveTilemap.GetTile(pos + offset);
+        var aboveType = AboveTileType.None;
+        sbyte playerId = -1;
+        if (aboveTileBase != null)
+        {
+            var playerIdPattern = new Regex(@"^\w+(?<playerId>\d+)$");
+            var match = playerIdPattern.Match(aboveTileBase.name);
+            if (match.Success)
+            {
+                sbyte.TryParse(match.Groups["playerId"].Value, out playerId);
+            }
+            Enum.TryParse(aboveTileBase.name, out aboveType);
+        }
+        
+        return new RootTileData
+        {
+            PlayerId = playerId,
+            GroundType = groundType,
+            AboveType = aboveType,
+        };
+    }
+    
     private void Update()
     {
         var mouseWorldPosition = _camera.ScreenToWorldPoint(Input.mousePosition);

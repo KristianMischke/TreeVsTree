@@ -40,7 +40,8 @@ public class GameController : MonoBehaviour
         MapController.OnHexCellClicked += OnTileClicked;
         
         _random = new Random();
-        InitMap();
+        MapController.GetGameStateFromTilemap(out _tiles);
+        // InitMap();
         InitializePlayers();
     }
 
