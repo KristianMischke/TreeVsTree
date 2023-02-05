@@ -142,6 +142,7 @@ public class NetworkGameController : MonoBehaviourPunCallbacks
         // TODO: show message in UI that they disconnected
 
         _gameLogic?.PlayerLeft(playerId);
+        UpdateVisuals();
     }
 
     [PunRPC]
