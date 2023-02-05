@@ -2,16 +2,31 @@ using System.Collections.Generic;
 using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using Random = System.Random;
 
 public class NetworkGameController : MonoBehaviourPunCallbacks
 {
+    public static NetworkGameController Instance;
+    
+    private GameLogic.GameParameters _currentGameParameters;
     private GameLogic _gameLogic;
     private sbyte _thisPlayerId;
     private MapController _mapController;
+    private Random _random;
 
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+        
+        _random = new Random();
         _mapController = FindObjectOfType<MapController>();
         PhotonNetwork.ConnectUsingSettings();
     }
@@ -19,22 +34,81 @@ public class NetworkGameController : MonoBehaviourPunCallbacks
     public override void OnConnectedToMaster()
     {
         Debug.Log("OnConnectedToMaster() was called by PUN.");
-        
-        RoomOptions roomOptions = new RoomOptions();
-        roomOptions.IsVisible = false;
-        roomOptions.MaxPlayers = 2;
-
-        PhotonNetwork.JoinOrCreateRoom("test_room", roomOptions, TypedLobby.Default);
     }
 
-    public void OnJoinedRoomFailed()
+    public void CreateRoomWithSettings(GameLogic.GameParameters gameParameters)
     {
-        Debug.LogError("OnJoinedRoomFailed");
+        var roomName = _random.Next(1000, 9999);
+
+        RoomOptions roomOptions = new RoomOptions();
+        roomOptions.IsVisible = false;
+        roomOptions.MaxPlayers = gameParameters.NumPlayers;
+        _currentGameParameters = gameParameters;
+        FillRoomPropertiesWithGameParams(roomOptions, gameParameters);
+
+        PhotonNetwork.CreateRoom(roomName.ToString(), roomOptions);
+    }
+
+    public void FillRoomPropertiesWithGameParams(RoomOptions roomOptions, GameLogic.GameParameters gameParameters)
+    {
+        var properties = typeof(GameLogic.GameParameters).GetProperties();
+        foreach (var property in properties)
+        {
+            roomOptions.CustomRoomProperties[property.Name] = property.GetValue(gameParameters);
+        }
+    }
+    
+    public GameLogic.GameParameters GetCurrentRoomGameParams()
+    {
+        GameLogic.GameParameters currentParams = new GameLogic.GameParameters();
+        foreach (var roomProperty in PhotonNetwork.CurrentRoom.CustomProperties)
+        {
+            var propertyInfo = typeof(GameLogic.GameParameters).GetProperty((string)roomProperty.Key);
+            if (propertyInfo != null)
+            {
+                propertyInfo.SetValue(currentParams, roomProperty.Value);
+            }
+        }
+        return currentParams;
+    }
+
+    public void OnJoinedRoomFailed(short returnCode, string message)
+    {
+        Debug.LogError($"OnJoinedRoomFailed {returnCode} {message}");
     }
     
     public override void OnJoinedRoom()
     {
-        // TODO networked parameters & map select
+        if (!PhotonNetwork.IsMasterClient)
+        {
+            _currentGameParameters = GetCurrentRoomGameParams();
+            SceneManager.LoadScene(_currentGameParameters.MapName);
+        }
+    }
+    
+    public override void OnPlayerEnteredRoom(Player newPlayer)
+    {
+        if (PhotonNetwork.CurrentRoom.PlayerCount == _currentGameParameters.NumPlayers
+            && PhotonNetwork.IsMasterClient)
+        {
+            // if we're the master client and we have everyone in the room, tell everyone to start the game
+            photonView.RPC(nameof(StartGame), RpcTarget.All);
+        }
+    }
+    
+    public override void OnPlayerLeftRoom(Player otherPlayer)
+    {
+        var playerId = (sbyte)(otherPlayer.ActorNumber - 1);
+        Debug.LogWarning($"Player {playerId} left");
+        
+        // TODO: show message in UI that they disconnected
+
+        _gameLogic?.PlayerLeft(playerId);
+    }
+
+    [PunRPC]
+    public void StartGame()
+    {
         _mapController.GetGameStateFromTilemap(out var tiles, out var zeroIsOddColumn);
         _mapController.OnHexCellClicked += OnTileClicked;
 
