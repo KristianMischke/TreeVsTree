@@ -62,12 +62,17 @@ public class NetworkGameController : MonoBehaviourPunCallbacks
         PhotonNetwork.CreateRoom(roomName.ToString(), roomOptions);
     }
 
+    public void JoinRoomWithCode(string code)
+    {
+        PhotonNetwork.JoinRoom(code);
+    }
+
     public void FillRoomPropertiesWithGameParams(RoomOptions roomOptions, GameLogic.GameParameters gameParameters)
     {
-        var properties = typeof(GameLogic.GameParameters).GetProperties();
-        foreach (var property in properties)
+        var fields = typeof(GameLogic.GameParameters).GetFields();
+        foreach (var field in fields)
         {
-            roomOptions.CustomRoomProperties[property.Name] = property.GetValue(gameParameters);
+            roomOptions.CustomRoomProperties[field.Name] = field.GetValue(gameParameters);
         }
     }
     
@@ -76,18 +81,19 @@ public class NetworkGameController : MonoBehaviourPunCallbacks
         GameLogic.GameParameters currentParams = new GameLogic.GameParameters();
         foreach (var roomProperty in PhotonNetwork.CurrentRoom.CustomProperties)
         {
-            var propertyInfo = typeof(GameLogic.GameParameters).GetProperty((string)roomProperty.Key);
-            if (propertyInfo != null)
+            var fieldInfo = typeof(GameLogic.GameParameters).GetField((string)roomProperty.Key);
+            if (fieldInfo != null)
             {
-                propertyInfo.SetValue(currentParams, roomProperty.Value);
+                fieldInfo.SetValue(currentParams, roomProperty.Value);
             }
         }
         return currentParams;
     }
 
-    public void OnJoinedRoomFailed(short returnCode, string message)
+    public override void OnJoinRoomFailed(short returnCode, string message)
     {
         Debug.LogError($"OnJoinedRoomFailed {returnCode} {message}");
+        SceneManager.LoadScene("Main Menu");
     }
     
     public override void OnJoinedRoom()
@@ -98,10 +104,16 @@ public class NetworkGameController : MonoBehaviourPunCallbacks
             _currentGameParameters = GetCurrentRoomGameParams();
         }
         var loadingScene = SceneManager.LoadSceneAsync(_currentGameParameters.MapName);
+        loadingScene.completed += LoadedIntoMap;
+    }
 
+    private void LoadedIntoMap(AsyncOperation asyncOperation)
+    {
+        UIController.Instance.ShowRoomCode(PhotonNetwork.CurrentRoom.Name);
+        
         if (LocalTesting)
         {
-            loadingScene.completed += (x) => { photonView.RPC(nameof(StartGame), RpcTarget.All); };
+            photonView.RPC(nameof(StartGame), RpcTarget.All);
         }
     }
     

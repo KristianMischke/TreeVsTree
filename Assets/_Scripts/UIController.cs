@@ -19,9 +19,14 @@ public class UIController : MonoBehaviour
         Instance = this;
     }
     
+    public void ShowRoomCode(string roomCode)
+    {
+        moveText.text = "Code: " + roomCode;
+    }
+    
     public void SetTurnText(bool isOurTurn, int remainingMoves)
     {
-        if(isOurTurn)
+        if (isOurTurn)
         {
             moveText.text = "Moves left:" + remainingMoves;
         }
