@@ -14,12 +14,12 @@ public class MapController : MonoBehaviour
     private static Dictionary<(sbyte, AboveTileType), TileBase> _aboveTileAssetMapping = new Dictionary<(sbyte, AboveTileType), TileBase>();
 
     private ReleasePool<SpriteRenderer> _tileOverlayReleasePool;
+    private GameObject _poolParent;
     private readonly HashSet<Action<Vector2Int>> _onCellClickedCallbacks = new HashSet<Action<Vector2Int>>();
     private readonly Dictionary<Vector3Int, SpriteRenderer> _overlayObjects = new Dictionary<Vector3Int, SpriteRenderer>();
 
     private Grid _grid;
     private Camera _camera;
-
     
     
     public Tilemap GroundTilemap;
@@ -43,10 +43,21 @@ public class MapController : MonoBehaviour
         _grid = GetComponent<Grid>();
         _camera = Camera.main;
 
+        _poolParent = new GameObject("releasePool");
+        _poolParent.transform.SetParent(transform);
+        
         _tileOverlayReleasePool = new ReleasePool<SpriteRenderer>(
             () => Instantiate(OverlayTilePrefab),
-            sr => sr.gameObject.SetActive(true),
-            sr => sr.gameObject.SetActive(false)
+            sr =>
+            {
+                sr.transform.SetParent(transform);
+                sr.gameObject.SetActive(true);
+            },
+            sr =>
+            {
+                sr.transform.SetParent(_poolParent.transform);
+                sr.gameObject.SetActive(false);
+            }
             );
     }
 
