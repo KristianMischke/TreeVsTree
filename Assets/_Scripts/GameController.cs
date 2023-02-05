@@ -58,6 +58,11 @@ public class GameController : MonoBehaviour
         InitializePlayers();
 
         _movesThisTurn = _players[_playerTurn].NumMoves;
+
+        //give first player one less move on first turn
+        if(_movesThisTurn > 1){
+            _movesThisTurn -= 1;
+        }
     }
 
     private void OnDestroy()
