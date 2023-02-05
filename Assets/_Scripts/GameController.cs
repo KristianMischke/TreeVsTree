@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 using Random = System.Random;
 
 public class GameController : MonoBehaviour
@@ -11,6 +12,8 @@ public class GameController : MonoBehaviour
     private RootTileData[,] _tiles;
     private bool _zeroIsOddColumn = false;
     private bool _areTilesDirty = true;
+
+    public Text turnsTextBox;
 
     public struct Player
     {
@@ -75,6 +78,7 @@ public class GameController : MonoBehaviour
     {
         if (_areTilesDirty)
         {
+            turnsTextBox.text = "Moves left:" + _movesThisTurn.ToString();
             //Vector2Int playerTree = (Vector2Int)GetPlayerTreePosition(_playerTurn);
             //HashSet<Vector2Int> connectedTiles = findConnectedRoots(playerTree, _playerTurn);
             var victoryCheck = CheckVictory();
