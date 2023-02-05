@@ -61,10 +61,13 @@ public class GameController : MonoBehaviour
     {
         if (_areTilesDirty)
         {
+            Vector2Int playerTree = (Vector2Int)GetPlayerTreePosition(_playerTurn);
+            HashSet<Vector2Int> connectedTiles = findConnectedRoots(playerTree, _playerTurn);
             _areTilesDirty = false;
+            KillRoots(connectedTiles, _playerTurn);
             _playerTiles = giveValidTiles(_playerTurn);
             //List<Vector2Int> playerTilesList = playerTiles.ToList();
-            //MapController.SetMap(_tiles, findConnectedRoots(PlayerStartPositions[_playerTurn], _playerTurn)); // Used for testing, highlights connected roots
+            //MapController.SetMap(_tiles, findConnectedRoots((Vector2Int)GetPlayerTreePosition(_playerTurn), _playerTurn)); // Used for testing, highlights connected roots
             MapController.SetMap(_tiles, _playerTiles);
             //MapController.SetMap(_tiles, new[] { new Vector2Int(_random.Next(MapWidth), _random.Next(MapHeight)), new Vector2Int(3, 4) });
         }
@@ -109,6 +112,8 @@ public class GameController : MonoBehaviour
         {
             validMove = false;
         }
+
+        
 
         _areTilesDirty = validMove;
 
@@ -170,7 +175,8 @@ public class GameController : MonoBehaviour
         if (!connectedTiles.Contains(position))
         {
             connectedTiles.Add(position);
-            if(position.x % 2 == 0) // Not an offset column
+            var polarity = _zeroIsOddColumn ? 1 : 0;
+            if (position.x%2 == polarity) // Not an offset column
             {
                 if(_tiles[position.x - 1, position.y - 1].PlayerId == playerID)
                 {
@@ -226,6 +232,24 @@ public class GameController : MonoBehaviour
             }
         }
         return connectedTiles;
+    }
+    // Turns unconnected roots into dead roots
+    private void KillRoots(HashSet<Vector2Int> connectedRoots, int playerID)
+    {
+        Debug.Log(playerID);
+        //HashSet<Vector2Int> tilesToKill = new HashSet<Vector2Int>();
+        for (int i = 0; i < MapWidth; i++) // Adds valid tiles
+        {
+            for (int j = 0; j < MapHeight; j++)
+            {
+                if (_tiles[i, j].PlayerId == _playerTurn && !(connectedRoots.Contains(new Vector2Int(i, j))))
+                {
+                    _tiles[i, j].AboveType = AboveTileType.TreeRootsDead;
+                    _tiles[i, j].PlayerId = -1;
+                    //tilesToKill.Add(new Vector2Int(i, j));
+                }
+            }
+        }
     }
 
     private void InitializePlayers(){
