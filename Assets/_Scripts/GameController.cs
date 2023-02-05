@@ -66,8 +66,8 @@ public class GameController : MonoBehaviour
     {
         if (_areTilesDirty)
         {
-            Vector2Int playerTree = (Vector2Int)GetPlayerTreePosition(_playerTurn);
-            HashSet<Vector2Int> connectedTiles = findConnectedRoots(playerTree, _playerTurn);
+            //Vector2Int playerTree = (Vector2Int)GetPlayerTreePosition(_playerTurn);
+            //HashSet<Vector2Int> connectedTiles = findConnectedRoots(playerTree, _playerTurn);
             var victoryCheck = CheckVictory();
             if (victoryCheck != -1)
             {
@@ -75,7 +75,7 @@ public class GameController : MonoBehaviour
             }
             
             _areTilesDirty = false;
-            KillRoots(connectedTiles, _playerTurn);
+            //KillRoots(connectedTiles, _playerTurn);
             _playerTiles = giveValidTiles(_playerTurn);
             //List<Vector2Int> playerTilesList = playerTiles.ToList();
             //MapController.SetMap(_tiles, findConnectedRoots((Vector2Int)GetPlayerTreePosition(_playerTurn), _playerTurn)); // Used for testing, highlights connected roots
@@ -295,6 +295,7 @@ public class GameController : MonoBehaviour
             {
                 if (_tiles[i, j].PlayerId == _playerTurn && !(connectedRoots.Contains(new Vector2Int(i, j))))
                 {
+                    RemoveResource(_tiles[i, j]);
                     _tiles[i, j].AboveType = AboveTileType.TreeRootsDead;
                     _tiles[i, j].PlayerId = -1;
                     //tilesToKill.Add(new Vector2Int(i, j));
@@ -322,6 +323,10 @@ public class GameController : MonoBehaviour
         if(_playerTurn >= _numPlayers){
             _playerTurn = 0;
         }
+        
+        Vector2Int playerTree = (Vector2Int)GetPlayerTreePosition(_playerTurn);
+        HashSet<Vector2Int> connectedTiles = findConnectedRoots(playerTree, _playerTurn);
+        KillRoots(connectedTiles, _playerTurn);
 
         _movesThisTurn = _players[_playerTurn].NumMoves;
     }
