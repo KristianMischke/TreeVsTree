@@ -54,6 +54,8 @@ public class GameLogic
     public sbyte Winner => _victoryPlayer;
     public sbyte CurrentTurn => _currentPlayer;
 
+    public int RemainingMovesThisTurn => _remainingMovesThisTurn;
+
     public int MapWidth => _tiles.GetLength(0);
     public int MapHeight => _tiles.GetLength(1);
 

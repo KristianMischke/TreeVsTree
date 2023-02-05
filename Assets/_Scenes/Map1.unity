@@ -1813,6 +1813,11 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &870532224 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7985841608232269809, guid: 1774f7b44232e2143b38ef838567fabb, type: 3}
+  m_PrefabInstance: {fileID: 8394868659880205567}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1012289315
 GameObject:
   m_ObjectHideFlags: 0
@@ -1950,6 +1955,18 @@ PrefabInstance:
       propertyPath: m_Name
       value: _GAME_CONTROLLER
       objectReference: {fileID: 0}
+    - target: {fileID: 7229290617068371610, guid: b385ff44da717fe4a8b004fbde9872c5, type: 3}
+      propertyPath: moveText
+      value: 
+      objectReference: {fileID: 1616212047}
+    - target: {fileID: 7229290617068371610, guid: b385ff44da717fe4a8b004fbde9872c5, type: 3}
+      propertyPath: player1Win
+      value: 
+      objectReference: {fileID: 870532224}
+    - target: {fileID: 7229290617068371610, guid: b385ff44da717fe4a8b004fbde9872c5, type: 3}
+      propertyPath: player2Win
+      value: 
+      objectReference: {fileID: 1608872506}
     - target: {fileID: 7229290617068371611, guid: b385ff44da717fe4a8b004fbde9872c5, type: 3}
       propertyPath: sceneViewId
       value: 1
@@ -2138,6 +2155,22 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!1 &1608872506 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2393369245688527571, guid: 1774f7b44232e2143b38ef838567fabb, type: 3}
+  m_PrefabInstance: {fileID: 8394868659880205567}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1616212047 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8394868658832356281, guid: 1774f7b44232e2143b38ef838567fabb, type: 3}
+  m_PrefabInstance: {fileID: 8394868659880205567}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1761470126
 GameObject:
   m_ObjectHideFlags: 0
@@ -2274,6 +2307,26 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2174779059486050809, guid: 1774f7b44232e2143b38ef838567fabb, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2393369245688527571, guid: 1774f7b44232e2143b38ef838567fabb, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2507128155545486962, guid: 1774f7b44232e2143b38ef838567fabb, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4900570367049205252, guid: 1774f7b44232e2143b38ef838567fabb, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7985841608232269809, guid: 1774f7b44232e2143b38ef838567fabb, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8394868659252444109, guid: 1774f7b44232e2143b38ef838567fabb, type: 3}
       propertyPath: m_Pivot.x
       value: 0

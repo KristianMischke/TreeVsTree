@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class NetworkGameController : MonoBehaviourPunCallbacks
 {
@@ -10,6 +11,9 @@ public class NetworkGameController : MonoBehaviourPunCallbacks
     private sbyte _thisPlayerId;
     private MapController _mapController;
 
+    public Text moveText;
+    public GameObject player1Win;
+    public GameObject player2Win;
     
     // Start is called before the first frame update
     void Start()
@@ -64,6 +68,25 @@ public class NetworkGameController : MonoBehaviourPunCallbacks
         }
         var fogTiles = _gameLogic.GetFogPositions(_thisPlayerId);
         _mapController.SetMap(_gameLogic.Tiles, playerActionTiles, fogTiles);
+        
+        if(_gameLogic.CurrentTurn == _thisPlayerId)
+        {
+            moveText.text = "Moves left:" + _gameLogic.RemainingMovesThisTurn;
+        }
+        else
+        {
+            moveText.text = "Waiting...";
+        }
+
+        if(_gameLogic.GameOver)
+        {
+            if(_gameLogic.Winner == 0){
+                player1Win.SetActive(true);
+            }
+            else if(_gameLogic.Winner == 1){
+                player2Win.SetActive(true);
+            }
+        }
     }
 
     [PunRPC]
