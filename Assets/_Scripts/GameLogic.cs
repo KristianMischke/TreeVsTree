@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 public class GameLogic
 {
@@ -451,6 +450,16 @@ public class GameLogic
         }
 
         return null;
+    }
+
+    public void PlayerLeft(sbyte playerId)
+    {
+        var treePosition = GetPlayerTreePosition(playerId);
+        if (treePosition.HasValue)
+        {
+            _tiles[treePosition.Value.x, treePosition.Value.y].PlayerId = -1;
+            _tiles[treePosition.Value.x, treePosition.Value.y].AboveType = AboveTileType.None;
+        }
     }
 
     private sbyte CheckVictory()
