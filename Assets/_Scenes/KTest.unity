@@ -626,17 +626,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1774f7b44232e2143b38ef838567fabb, type: 3}
---- !u!114 &171584099 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8394868658832356281, guid: 1774f7b44232e2143b38ef838567fabb, type: 3}
-  m_PrefabInstance: {fileID: 171584098}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -1143,7 +1132,7 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 4912920430745855956, guid: b385ff44da717fe4a8b004fbde9872c5, type: 3}
+    - target: {fileID: 944162279991613552, guid: b385ff44da717fe4a8b004fbde9872c5, type: 3}
       propertyPath: sceneViewId
       value: 1
       objectReference: {fileID: 0}
@@ -1191,50 +1180,13 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 7229290617068371605, guid: b385ff44da717fe4a8b004fbde9872c5, type: 3}
-      propertyPath: turnsTextBox
-      value: 
-      objectReference: {fileID: 171584099}
-    - target: {fileID: 7229290617068371605, guid: b385ff44da717fe4a8b004fbde9872c5, type: 3}
-      propertyPath: MapController
-      value: 
-      objectReference: {fileID: 2073538829}
     - target: {fileID: 7229290617068371607, guid: b385ff44da717fe4a8b004fbde9872c5, type: 3}
       propertyPath: m_Name
       value: _GAME_CONTROLLER
       objectReference: {fileID: 0}
     - target: {fileID: 7229290617068371610, guid: b385ff44da717fe4a8b004fbde9872c5, type: 3}
       propertyPath: LocalTesting
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 7229290617068371610, guid: b385ff44da717fe4a8b004fbde9872c5, type: 3}
-      propertyPath: LocalMultiplayer
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7229290617068371610, guid: b385ff44da717fe4a8b004fbde9872c5, type: 3}
-      propertyPath: TestingParameters.MapName
-      value: KTest
-      objectReference: {fileID: 0}
-    - target: {fileID: 7229290617068371610, guid: b385ff44da717fe4a8b004fbde9872c5, type: 3}
-      propertyPath: TestingParameters.NumPlayers
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 7229290617068371610, guid: b385ff44da717fe4a8b004fbde9872c5, type: 3}
-      propertyPath: TestingParameters.TilesForVictory
-      value: 20
-      objectReference: {fileID: 0}
-    - target: {fileID: 7229290617068371610, guid: b385ff44da717fe4a8b004fbde9872c5, type: 3}
-      propertyPath: TestingParameters.PlayerDefaultTurnCount
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 7229290617068371610, guid: b385ff44da717fe4a8b004fbde9872c5, type: 3}
-      propertyPath: TestingParameters.FirstPlayerFirstTurnCount
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7229290617068371611, guid: b385ff44da717fe4a8b004fbde9872c5, type: 3}
-      propertyPath: sceneViewId
-      value: 1
-      objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 7229290617068371611, guid: b385ff44da717fe4a8b004fbde9872c5, type: 3}
+    m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b385ff44da717fe4a8b004fbde9872c5, type: 3}

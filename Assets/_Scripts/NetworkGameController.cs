@@ -62,6 +62,11 @@ public class NetworkGameController : MonoBehaviourPunCallbacks
         PhotonNetwork.CreateRoom(roomName.ToString(), roomOptions);
     }
 
+    public void JoinRoomWithCode(string code)
+    {
+        PhotonNetwork.JoinRoom(code);
+    }
+
     public void FillRoomPropertiesWithGameParams(RoomOptions roomOptions, GameLogic.GameParameters gameParameters)
     {
         var properties = typeof(GameLogic.GameParameters).GetProperties();
@@ -98,10 +103,16 @@ public class NetworkGameController : MonoBehaviourPunCallbacks
             _currentGameParameters = GetCurrentRoomGameParams();
         }
         var loadingScene = SceneManager.LoadSceneAsync(_currentGameParameters.MapName);
+        loadingScene.completed += LoadedIntoMap;
+    }
 
+    private void LoadedIntoMap(AsyncOperation asyncOperation)
+    {
+        UIController.Instance.ShowRoomCode(PhotonNetwork.CurrentRoom.Name);
+        
         if (LocalTesting)
         {
-            loadingScene.completed += (x) => { photonView.RPC(nameof(StartGame), RpcTarget.All); };
+            photonView.RPC(nameof(StartGame), RpcTarget.All);
         }
     }
     
