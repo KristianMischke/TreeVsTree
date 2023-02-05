@@ -107,7 +107,7 @@ public class GameController : MonoBehaviour
         if(_playerTiles.Contains(positionxy))
         {
             //if empty tile, fill in with this player's roots
-            if(_tiles[position.x, position.y].PlayerId == -1)
+            if(_tiles[position.x, position.y].AboveType != AboveTileType.TreeRootsDead && _tiles[position.x, position.y].PlayerId == -1)
             {        
                 AddResource(_tiles[position.x, position.y]);
                 _tiles[position.x, position.y].PlayerId = _playerTurn;
@@ -117,6 +117,11 @@ public class GameController : MonoBehaviour
             else if(_tiles[position.x, position.y].PlayerId != _playerTurn)
             {
                 RemoveResource(_tiles[position.x, position.y]);
+                _tiles[position.x, position.y].PlayerId = -1;
+                _tiles[position.x, position.y].AboveType = AboveTileType.MAX;
+            }
+            else if(_tiles[position.x, position.y].AboveType == AboveTileType.TreeRootsDead)
+            {
                 _tiles[position.x, position.y].PlayerId = -1;
                 _tiles[position.x, position.y].AboveType = AboveTileType.MAX;
             }
@@ -145,7 +150,9 @@ public class GameController : MonoBehaviour
 
     private void RemoveResource(RootTileData tile){
         if(tile.GroundType == GroundTileType.WaterTile || tile.GroundType == GroundTileType.RichSoilTile){
-            _players[tile.PlayerId].NumMoves--;
+            if(tile.AboveType != AboveTileType.TreeRootsDead){
+                _players[tile.PlayerId].NumMoves--;
+            }
         }
     }
 
