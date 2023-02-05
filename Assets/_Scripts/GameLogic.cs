@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Random = System.Random;
 
 public class GameLogic
 {
-    System.Random rnd = new System.Random();
     public struct Player
     {
         public sbyte Id;
@@ -23,6 +23,8 @@ public class GameLogic
     [Serializable]
     public struct GameParameters
     {
+        public int seed;
+        
         public string MapName;
         
         public byte NumPlayers;
@@ -47,6 +49,7 @@ public class GameLogic
         FirstPlayerFirstTurnCount = 1
     };
 
+    private readonly Random _random;
     private readonly GameParameters _parameters;
     private readonly RootTileData[,] _tiles;
     private Player[] _players;
@@ -78,6 +81,7 @@ public class GameLogic
         _parameters = parameters;
         _tiles = map;
         _zeroIsOddColumn = zeroIsOddColumn;
+        _random = new Random(_parameters.seed);
 
         InitializePlayers();
         _victoryPlayer = -1;
@@ -424,7 +428,7 @@ public class GameLogic
             }
             if (numValidPos >= 0) // Rabbit only attempts to move if it can
             {
-                int directionToMove = rnd.Next(numValidPos); // 0 is lower left, goes clockwise from there
+                int directionToMove = _random.Next(numValidPos); // 0 is lower left, goes clockwise from there
                 _tiles[RabbitPos.x, RabbitPos.y].AboveType = AboveTileType.None;
                 _tiles[ValidRabbitMoves[directionToMove].x, ValidRabbitMoves[directionToMove].y].AboveType = AboveTileType.Rabbit;
             }

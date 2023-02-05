@@ -57,6 +57,7 @@ public class NetworkGameController : MonoBehaviourPunCallbacks
         RoomOptions roomOptions = new RoomOptions();
         roomOptions.IsVisible = false;
         roomOptions.MaxPlayers = gameParameters.NumPlayers;
+        gameParameters.seed = roomName;
         _currentGameParameters = gameParameters;
         roomOptions.CustomRoomProperties = GetHashtablePropertiesWithGameParams(gameParameters);
 
