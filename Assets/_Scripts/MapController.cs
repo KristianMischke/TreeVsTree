@@ -131,8 +131,14 @@ public class MapController : MonoBehaviour
         GetPositionsAndTiles(tiles, GetGroundAsset, tileFogPositions, false, out var positions, out var tileBases);
         GroundTilemap.ClearAllTiles();
         GroundTilemap.SetTiles(positions, tileBases);
-        
+
         // update above tilemap
+        /*if (tileFogPositions == null)
+        {
+            GetPositionsAndTiles(tiles, GetAboveAsset, tileFogPositions, false, out positions, out tileBases);
+        }
+        else
+        {*/
         GetPositionsAndTiles(tiles, GetAboveAsset, tileFogPositions, true, out positions, out tileBases);
         AboveTilemap.ClearAllTiles();
         AboveTilemap.SetTiles(positions, tileBases);

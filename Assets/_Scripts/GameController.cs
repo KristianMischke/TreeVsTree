@@ -24,11 +24,24 @@ public class GameController : MonoBehaviour
         public int NumMoves;
     }
 
-    private int _tilesForVictory = 20;
+
+    [Serializable]
+    public struct GameParameters
+    {
+        public int _tilesForVictory;
+        public sbyte _numPlayers;
+        public bool fogOfWarEnabled;
+    }
+
+    
+    public GameParameters CurrentParameters;
+
+
+    
     private int _turnNumber = 0;
     private int _movesThisTurn;
 
-    private sbyte _numPlayers = 2;
+    
     private sbyte _playerTurn = 0;
 
     private Player[] _players;
@@ -90,12 +103,20 @@ public class GameController : MonoBehaviour
             _areTilesDirty = false;
             //KillRoots(connectedTiles, _playerTurn);
             _playerTiles = giveValidTiles(_playerTurn);
-            _playerVisibleTiles = giveSeenTiles(_playerTurn);
-            _playerFogTiles = getFog(_playerVisibleTiles);
+            if (CurrentParameters.fogOfWarEnabled)
+            {
+                _playerVisibleTiles = giveSeenTiles(_playerTurn);
+                _playerFogTiles = getFog(_playerVisibleTiles);
+                MapController.SetMap(_tiles, _playerTiles, _playerFogTiles);
+            }
+            else
+            {
+                MapController.SetMap(_tiles, _playerTiles, new HashSet<Vector2Int>());
+            }
             //_playerFogTiles = new HashSet<Vector2Int>(); // Disables fog, used for testing
             //List<Vector2Int> playerTilesList = playerTiles.ToList();
             //MapController.SetMap(_tiles, findConnectedRoots((Vector2Int)GetPlayerTreePosition(_playerTurn), _playerTurn)); // Used for testing, highlights connected roots
-            MapController.SetMap(_tiles, _playerTiles, _playerFogTiles);
+            
             //MapController.SetMap(_tiles, new[] { new Vector2Int(_random.Next(MapWidth), _random.Next(MapHeight)), new Vector2Int(3, 4) });
         }
     }
@@ -406,9 +427,9 @@ public class GameController : MonoBehaviour
     }
 
     private void InitializePlayers(){
-        _players = new Player[_numPlayers];
+        _players = new Player[CurrentParameters._numPlayers];
 
-        for(sbyte i = 0; i < _numPlayers; i++){
+        for(sbyte i = 0; i < CurrentParameters._numPlayers; i++){
             _players[i] = new Player
             {
                 Id = i,
@@ -421,7 +442,7 @@ public class GameController : MonoBehaviour
     private void NextTurn(){
         _turnNumber++;
         _playerTurn++;
-        if(_playerTurn >= _numPlayers){
+        if(_playerTurn >= CurrentParameters._numPlayers){
             _playerTurn = 0;
         }
         
@@ -449,7 +470,7 @@ public class GameController : MonoBehaviour
         sbyte victory = -1;
         
         foreach(Player player in _players){
-            if(player.TilesControled >= _tilesForVictory){
+            if(player.TilesControled >= CurrentParameters._tilesForVictory){
                 victory = player.Id;
             }
         }
@@ -457,7 +478,7 @@ public class GameController : MonoBehaviour
         if(victory == -1)
         {
             HashSet<sbyte> remainingPlayers = new HashSet<sbyte>();
-            for (sbyte i = 0; i < _numPlayers; i++)
+            for (sbyte i = 0; i < CurrentParameters._numPlayers; i++)
             {
                 var treePosition = GetPlayerTreePosition(i);
                 if (treePosition != null)
