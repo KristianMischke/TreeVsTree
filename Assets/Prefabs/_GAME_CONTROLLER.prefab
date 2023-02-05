@@ -9,7 +9,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7229290617068371604}
-  - component: {fileID: 7229290617068371605}
   - component: {fileID: 7229290617068371610}
   - component: {fileID: 7229290617068371611}
   m_Layer: 0
@@ -33,25 +32,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7229290617068371605
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7229290617068371607}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 402c673a3c1474b4db38efe617a916fb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  turnsTextBox: {fileID: 0}
-  CurrentParameters:
-    _tilesForVictory: 0
-    _numPlayers: 0
-    fogOfWarEnabled: 0
-  MapController: {fileID: 0}
-  PlayerWon: 0
 --- !u!114 &7229290617068371610
 MonoBehaviour:
   m_ObjectHideFlags: 0
