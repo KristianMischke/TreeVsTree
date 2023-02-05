@@ -15,6 +15,7 @@ public class MapController : MonoBehaviour
 
     private ReleasePool<SpriteRenderer> _tileOverlayReleasePool;
     private GameObject _poolParent;
+    private GameObject _overlayParent;
     private readonly HashSet<Action<Vector2Int>> _onCellClickedCallbacks = new HashSet<Action<Vector2Int>>();
     private readonly Dictionary<Vector3Int, SpriteRenderer> _overlayObjects = new Dictionary<Vector3Int, SpriteRenderer>();
 
@@ -45,12 +46,13 @@ public class MapController : MonoBehaviour
 
         _poolParent = new GameObject("releasePool");
         _poolParent.transform.SetParent(transform);
-        
+        _overlayParent = new GameObject("activeOverlays");
+        _overlayParent.transform.SetParent(transform);
         _tileOverlayReleasePool = new ReleasePool<SpriteRenderer>(
             () => Instantiate(OverlayTilePrefab),
             sr =>
             {
-                sr.transform.SetParent(transform);
+                sr.transform.SetParent(_overlayParent.transform);
                 sr.gameObject.SetActive(true);
             },
             sr =>
