@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class GameLogic
 {
+    System.Random rnd = new System.Random();
     public struct Player
     {
         public sbyte Id;
@@ -27,6 +28,7 @@ public class GameLogic
         public byte NumPlayers;
         public int TilesForVictory;
         public bool FogOfWarEnabled;
+        public bool RabbitEnabled;
         
         public int FirstPlayerFirstTurnCount;
         public int PlayerDefaultTurnCount;
@@ -38,7 +40,8 @@ public class GameLogic
         
         NumPlayers = 2,
         TilesForVictory = 20,
-        FogOfWarEnabled = true,
+        FogOfWarEnabled = false,
+        RabbitEnabled = true,
 
         PlayerDefaultTurnCount = 2,
         FirstPlayerFirstTurnCount = 1
@@ -78,6 +81,48 @@ public class GameLogic
         _victoryPlayer = -1;
         _currentPlayer = 0;
         _remainingMovesThisTurn = _parameters.FirstPlayerFirstTurnCount;
+        if(_parameters.RabbitEnabled == false)
+        {
+            RemoveRabbitAndCarrot(_tiles);
+        }
+    }
+
+    private void RemoveRabbitAndCarrot(RootTileData[,] map)
+    {
+        for(int i = 0; i < MapWidth; i++)
+        {
+            for(int j = 0; j < MapHeight; j++)
+            {
+                if(map[i,j].GroundType == GroundTileType.CarrotTile)
+                {
+                    Debug.Log(i + " " + j);
+                    map[i, j].GroundType = GroundTileType.GrassTile;
+                }
+                if(map[i,j].AboveType == AboveTileType.Rabbit)
+                {
+                    Debug.Log(i + " " + j);
+                    map[i, j].AboveType = AboveTileType.None;
+                }
+            }
+        }
+    }
+
+    public Vector2Int FindRabbit(RootTileData[,] map)
+    {
+        Debug.Log("Runs findRabbit");
+        for (int i = 0; i < MapWidth; i++)
+        {
+            for (int j = 0; j < MapHeight; j++)
+            {
+                
+                if (map[i,j].AboveType == AboveTileType.Rabbit)
+                {
+                    Debug.Log("returns a rabbit");
+                    return new Vector2Int(i, j);
+                }
+            }
+        }
+        return new Vector2Int(0,0); // Should never return
     }
 
     public bool DoAction(PlayerActions playerActions, Vector2Int position)
@@ -113,7 +158,11 @@ public class GameLogic
         {
             _currentPlayer = 0;
         }
-
+        if (_parameters.RabbitEnabled == true) 
+        {
+            Vector2Int RabbitPos = FindRabbit(_tiles);
+            moveRabbit(RabbitPos);
+        }
         Vector2Int playerTree = GetPlayerTreePosition(_currentPlayer)!.Value;
         HashSet<Vector2Int> connectedTiles = GetConnectedRoots(playerTree, _currentPlayer);
         KillRoots(connectedTiles, _currentPlayer);
@@ -217,7 +266,8 @@ public class GameLogic
         {
             if (_tiles[pos.x, pos.y].PlayerId == playerID
                 || _tiles[pos.x, pos.y].GroundType == GroundTileType.MountainTile
-                || _tiles[pos.x, pos.y].GroundType == GroundTileType.None)
+                || _tiles[pos.x, pos.y].GroundType == GroundTileType.None
+                || _tiles[pos.x, pos.y].AboveType == AboveTileType.Rabbit)
             {
                 validTiles.Remove(pos);
             }
@@ -317,6 +367,82 @@ public class GameLogic
         }
 
         return fogTiles;
+    }
+
+    private void moveRabbit(Vector2Int RabbitPos)
+    {
+        int numValidPos = 5;
+        List<Vector2Int> ValidRabbitMoves = GetAdjacentPositions(RabbitPos);
+        for(int i = 0; i < ValidRabbitMoves.Count; i++)
+        {
+            if( !AllTilesBounds.Contains(new Vector2Int(ValidRabbitMoves[i].x, ValidRabbitMoves[i].y))
+                || _tiles[ValidRabbitMoves[i].x, ValidRabbitMoves[i].y].AboveType != AboveTileType.None 
+                || _tiles[ValidRabbitMoves[i].x, ValidRabbitMoves[i].y].GroundType == GroundTileType.MountainTile 
+                || _tiles[ValidRabbitMoves[i].x, ValidRabbitMoves[i].y].GroundType == GroundTileType.None)
+            {
+                ValidRabbitMoves.RemoveAt(i);
+                numValidPos--;
+                i--;
+            }
+        }
+        if (numValidPos > 0) // Rabbit only attempts to move if it can
+        {
+            int directionToMove = rnd.Next(numValidPos); // 0 is lower left, goes clockwise from there
+            _tiles[RabbitPos.x, RabbitPos.y].AboveType = AboveTileType.None;
+            _tiles[ValidRabbitMoves[directionToMove].x, ValidRabbitMoves[directionToMove].y].AboveType = AboveTileType.Rabbit;
+        }
+        /*var polarity = _zeroIsOddColumn ? 1 : 0;
+        if (RabbitPos.x % 2 == polarity) // Not an offset column
+        {
+            switch (directionToMove)
+            {
+                
+                case 0: // lower left
+                    _tiles[RabbitPos.x - 1, RabbitPos.y - 1].AboveType = AboveTileType.Rabbit;
+                    break;
+                case 1: // upper left
+                    _tiles[RabbitPos.x - 1, RabbitPos.y].AboveType = AboveTileType.Rabbit;
+                    break;
+                case 2: // tile above
+                    _tiles[RabbitPos.x, RabbitPos.y + 1].AboveType = AboveTileType.Rabbit;
+                    break;
+                case 3: // upper right
+                    _tiles[RabbitPos.x + 1, RabbitPos.y].AboveType = AboveTileType.Rabbit;
+                    break;
+                case 4: // lower right
+                    _tiles[RabbitPos.x + 1, RabbitPos.y - 1].AboveType = AboveTileType.Rabbit;
+                    break;
+                case 5: // tile below
+                    _tiles[RabbitPos.x, RabbitPos.y - 1].AboveType = AboveTileType.Rabbit;
+                    break;
+                
+            }
+        }
+        else // Offset column
+        {
+            switch (directionToMove)
+            {
+                case 0: // lower left
+                    _tiles[RabbitPos.x - 1, RabbitPos.y].AboveType = AboveTileType.Rabbit;
+                    break;
+                case 1: // upper left
+                    _tiles[RabbitPos.x - 1, RabbitPos.y + 1].AboveType = AboveTileType.Rabbit;
+                    break;
+                case 2: // tile above
+                    _tiles[RabbitPos.x, RabbitPos.y + 1].AboveType = AboveTileType.Rabbit;
+                    break;
+                case 3: // upper right
+                    _tiles[RabbitPos.x + 1, RabbitPos.y + 1].AboveType = AboveTileType.Rabbit;
+                    break;
+                case 4: // lower right
+                    _tiles[RabbitPos.x + 1, RabbitPos.y].AboveType = AboveTileType.Rabbit;
+                    break;
+                case 5: // tile below
+                    _tiles[RabbitPos.x, RabbitPos.y - 1].AboveType = AboveTileType.Rabbit;
+                    break;
+            }
+
+        }*/
     }
 
     private void InitializePlayers()
