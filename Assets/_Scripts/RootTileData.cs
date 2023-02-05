@@ -12,7 +12,7 @@ public enum GroundTileType
     TestTile,           // TODO: remove 
     TestTileYellow,     // TODO: remove
     WaterTile,
-    OverlayTile, // Placeholder for fog
+    CarrotTile,
 
     MAX
 }
@@ -23,6 +23,7 @@ public enum AboveTileType
     Tree,
     TreeRoots,
     TreeRootsDead,
+    Rabbit,
     
     MAX
 }
