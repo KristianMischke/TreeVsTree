@@ -40,8 +40,8 @@ public class GameLogic
         
         NumPlayers = 2,
         TilesForVictory = 20,
-        FogOfWarEnabled = true,
-        RabbitEnabled = false,
+        FogOfWarEnabled = false,
+        RabbitEnabled = true,
 
         PlayerDefaultTurnCount = 2,
         FirstPlayerFirstTurnCount = 1
@@ -266,7 +266,8 @@ public class GameLogic
         {
             if (_tiles[pos.x, pos.y].PlayerId == playerID
                 || _tiles[pos.x, pos.y].GroundType == GroundTileType.MountainTile
-                || _tiles[pos.x, pos.y].GroundType == GroundTileType.None)
+                || _tiles[pos.x, pos.y].GroundType == GroundTileType.None
+                || _tiles[pos.x, pos.y].AboveType == AboveTileType.Rabbit)
             {
                 validTiles.Remove(pos);
             }
@@ -370,13 +371,32 @@ public class GameLogic
 
     private void moveRabbit(Vector2Int RabbitPos)
     {
-        int directionToMove = rnd.Next(5); // 0 is lower left, goes clockwise from there
-        _tiles[RabbitPos.x, RabbitPos.y].AboveType = AboveTileType.None;
-        var polarity = _zeroIsOddColumn ? 1 : 0;
+        int numValidPos = 5;
+        List<Vector2Int> ValidRabbitMoves = GetAdjacentPositions(RabbitPos);
+        for(int i = 0; i < ValidRabbitMoves.Count; i++)
+        {
+            if( !AllTilesBounds.Contains(new Vector2Int(ValidRabbitMoves[i].x, ValidRabbitMoves[i].y))
+                || _tiles[ValidRabbitMoves[i].x, ValidRabbitMoves[i].y].AboveType != AboveTileType.None 
+                || _tiles[ValidRabbitMoves[i].x, ValidRabbitMoves[i].y].GroundType == GroundTileType.MountainTile 
+                || _tiles[ValidRabbitMoves[i].x, ValidRabbitMoves[i].y].GroundType == GroundTileType.None)
+            {
+                ValidRabbitMoves.RemoveAt(i);
+                numValidPos--;
+                i--;
+            }
+        }
+        if (numValidPos > 0) // Rabbit only attempts to move if it can
+        {
+            int directionToMove = rnd.Next(numValidPos); // 0 is lower left, goes clockwise from there
+            _tiles[RabbitPos.x, RabbitPos.y].AboveType = AboveTileType.None;
+            _tiles[ValidRabbitMoves[directionToMove].x, ValidRabbitMoves[directionToMove].y].AboveType = AboveTileType.Rabbit;
+        }
+        /*var polarity = _zeroIsOddColumn ? 1 : 0;
         if (RabbitPos.x % 2 == polarity) // Not an offset column
         {
             switch (directionToMove)
             {
+                
                 case 0: // lower left
                     _tiles[RabbitPos.x - 1, RabbitPos.y - 1].AboveType = AboveTileType.Rabbit;
                     break;
@@ -395,6 +415,7 @@ public class GameLogic
                 case 5: // tile below
                     _tiles[RabbitPos.x, RabbitPos.y - 1].AboveType = AboveTileType.Rabbit;
                     break;
+                
             }
         }
         else // Offset column
@@ -421,7 +442,7 @@ public class GameLogic
                     break;
             }
 
-        }
+        }*/
     }
 
     private void InitializePlayers()
