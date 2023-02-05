@@ -147,21 +147,33 @@ public class GameController : MonoBehaviour
                     var polarity = _zeroIsOddColumn ? 1 : 0;
                     if(i%2 == polarity) // Not an offset column
                     {
-                        validTiles.Add(new Vector2Int(i - 1, j - 1)); // Lower left tile
+                        tryAdd(validTiles, i - 1, j - 1); // Lower left tile
+                        tryAdd(validTiles, i - 1, j); // Upper left tile
+                        tryAdd(validTiles, i, j - 1); // Tile below
+                        tryAdd(validTiles, i, j + 1); // Tile above
+                        tryAdd(validTiles, i + 1, j - 1); // Lower right tile
+                        tryAdd(validTiles, i + 1, j); // Upper right tile
+                        /*validTiles.Add(new Vector2Int(i - 1, j - 1)); // Lower left tile
                         validTiles.Add(new Vector2Int(i - 1, j)); // Upper left tile
                         validTiles.Add(new Vector2Int(i, j - 1)); // Tile below
                         validTiles.Add(new Vector2Int(i, j + 1)); // Tile above
                         validTiles.Add(new Vector2Int(i + 1, j - 1)); // Lower right tile
-                        validTiles.Add(new Vector2Int(i + 1, j)); // Upper right tile
+                        validTiles.Add(new Vector2Int(i + 1, j)); // Upper right tile*/
                     }
                     else // Offset column
                     {
-                        validTiles.Add(new Vector2Int(i - 1, j)); // Lower left tile
+                        tryAdd(validTiles, i - 1, j); // Lower left tile
+                        tryAdd(validTiles, i - 1, j + 1); // Upper left tile
+                        tryAdd(validTiles, i, j - 1); // Tile below
+                        tryAdd(validTiles, i, j + 1); // Tile above
+                        tryAdd(validTiles, i + 1, j); // Lower right tile
+                        tryAdd(validTiles, i + 1, j + 1); // Upper right tile
+                        /*validTiles.Add(new Vector2Int(i - 1, j)); // Lower left tile
                         validTiles.Add(new Vector2Int(i - 1, j + 1)); // Upper left tile
                         validTiles.Add(new Vector2Int(i, j - 1)); // Tile below
                         validTiles.Add(new Vector2Int(i, j + 1)); // Tile above
                         validTiles.Add(new Vector2Int(i + 1, j)); // Lower right tile
-                        validTiles.Add(new Vector2Int(i + 1, j + 1)); // Upper right tile
+                        validTiles.Add(new Vector2Int(i + 1, j + 1)); // Upper right tile*/
                     }
                     
                 }
@@ -180,6 +192,13 @@ public class GameController : MonoBehaviour
         }
         return validTiles;
     }
+    private void tryAdd(HashSet<Vector2Int> setToAdd, int x, int y) // Adds position to a list while checking if it's in bounds
+    {
+        if (AllTilesBounds.Contains(new Vector2Int(x, y))){
+            setToAdd.Add(new Vector2Int(x, y));
+        }
+    }
+
     //Recursive function that catalogues all roots connected to a player's tree. Initial position value should be position of the players tree
     private HashSet<Vector2Int> findConnectedRoots(Vector2Int position, int playerID, HashSet<Vector2Int> connectedTiles = null)
     {
@@ -193,54 +212,54 @@ public class GameController : MonoBehaviour
             var polarity = _zeroIsOddColumn ? 1 : 0;
             if (position.x%2 == polarity) // Not an offset column
             {
-                if(_tiles[position.x - 1, position.y - 1].PlayerId == playerID)
+                if(AllTilesBounds.Contains(new Vector2Int(position.x - 1, position.y - 1)) && _tiles[position.x - 1, position.y - 1].PlayerId == playerID)
                 {
                     connectedTiles = findConnectedRoots(new Vector2Int(position.x - 1, position.y - 1), playerID, connectedTiles);
                 }
-                if (_tiles[position.x - 1, position.y].PlayerId == playerID)
+                if (AllTilesBounds.Contains(new Vector2Int(position.x - 1, position.y)) && _tiles[position.x - 1, position.y].PlayerId == playerID)
                 {
                     connectedTiles = findConnectedRoots(new Vector2Int(position.x - 1, position.y), playerID, connectedTiles);
                 }
-                if (_tiles[position.x, position.y - 1].PlayerId == playerID)
+                if (AllTilesBounds.Contains(new Vector2Int(position.x, position.y - 1)) && _tiles[position.x, position.y - 1].PlayerId == playerID)
                 {
                     connectedTiles = findConnectedRoots(new Vector2Int(position.x, position.y - 1), playerID, connectedTiles);
                 }
-                if (_tiles[position.x, position.y + 1].PlayerId == playerID)
+                if (AllTilesBounds.Contains(new Vector2Int(position.x, position.y + 1)) && _tiles[position.x, position.y + 1].PlayerId == playerID)
                 {
                     connectedTiles = findConnectedRoots(new Vector2Int(position.x, position.y + 1), playerID, connectedTiles);
                 }
-                if (_tiles[position.x + 1, position.y - 1].PlayerId == playerID)
+                if (AllTilesBounds.Contains(new Vector2Int(position.x + 1, position.y - 1)) && _tiles[position.x + 1, position.y - 1].PlayerId == playerID)
                 {
                     connectedTiles = findConnectedRoots(new Vector2Int(position.x + 1, position.y - 1), playerID, connectedTiles);
                 }
-                if (_tiles[position.x + 1, position.y].PlayerId == playerID)
+                if (AllTilesBounds.Contains(new Vector2Int(position.x + 1, position.y)) && _tiles[position.x + 1, position.y].PlayerId == playerID)
                 {
                     connectedTiles = findConnectedRoots(new Vector2Int(position.x + 1, position.y), playerID, connectedTiles);
                 }
             }
             else // offset column
             {
-                if (_tiles[position.x - 1, position.y].PlayerId == playerID)
+                if (AllTilesBounds.Contains(new Vector2Int(position.x - 1, position.y)) && _tiles[position.x - 1, position.y].PlayerId == playerID)
                 {
                     connectedTiles = findConnectedRoots(new Vector2Int(position.x - 1, position.y), playerID, connectedTiles);
                 }
-                if (_tiles[position.x - 1, position.y + 1].PlayerId == playerID)
+                if (AllTilesBounds.Contains(new Vector2Int(position.x - 1, position.y + 1)) && _tiles[position.x - 1, position.y + 1].PlayerId == playerID)
                 {
                     connectedTiles = findConnectedRoots(new Vector2Int(position.x - 1, position.y + 1), playerID, connectedTiles);
                 }
-                if (_tiles[position.x, position.y - 1].PlayerId == playerID)
+                if (AllTilesBounds.Contains(new Vector2Int(position.x, position.y - 1)) && _tiles[position.x, position.y - 1].PlayerId == playerID)
                 {
                     connectedTiles = findConnectedRoots(new Vector2Int(position.x, position.y - 1), playerID, connectedTiles);
                 }
-                if (_tiles[position.x, position.y + 1].PlayerId == playerID)
+                if (AllTilesBounds.Contains(new Vector2Int(position.x, position.y + 1)) && _tiles[position.x, position.y + 1].PlayerId == playerID)
                 {
                     connectedTiles = findConnectedRoots(new Vector2Int(position.x, position.y + 1), playerID, connectedTiles);
                 }
-                if (_tiles[position.x + 1, position.y].PlayerId == playerID)
+                if (AllTilesBounds.Contains(new Vector2Int(position.x + 1, position.y)) && _tiles[position.x + 1, position.y].PlayerId == playerID)
                 {
                     connectedTiles = findConnectedRoots(new Vector2Int(position.x + 1, position.y), playerID, connectedTiles);
                 }
-                if (_tiles[position.x + 1, position.y + 1].PlayerId == playerID)
+                if (AllTilesBounds.Contains(new Vector2Int(position.x + 1, position.y + 1)) && _tiles[position.x + 1, position.y + 1].PlayerId == playerID)
                 {
                     connectedTiles = findConnectedRoots(new Vector2Int(position.x + 1, position.y + 1), playerID, connectedTiles);
                 }
@@ -248,6 +267,9 @@ public class GameController : MonoBehaviour
         }
         return connectedTiles;
     }
+
+    
+
     // Turns unconnected roots into dead roots
     private void KillRoots(HashSet<Vector2Int> connectedRoots, int playerID)
     {
