@@ -70,8 +70,8 @@ public class GameController : MonoBehaviour
     {
         if (_areTilesDirty)
         {
-            Vector2Int playerTree = (Vector2Int)GetPlayerTreePosition(_playerTurn);
-            HashSet<Vector2Int> connectedTiles = findConnectedRoots(playerTree, _playerTurn);
+            //Vector2Int playerTree = (Vector2Int)GetPlayerTreePosition(_playerTurn);
+            //HashSet<Vector2Int> connectedTiles = findConnectedRoots(playerTree, _playerTurn);
             var victoryCheck = CheckVictory();
             if (victoryCheck != -1)
             {
@@ -79,7 +79,7 @@ public class GameController : MonoBehaviour
             }
             
             _areTilesDirty = false;
-            KillRoots(connectedTiles, _playerTurn);
+            //KillRoots(connectedTiles, _playerTurn);
             _playerTiles = giveValidTiles(_playerTurn);
             _playerVisibleTiles = giveSeenTiles(_playerTurn);
             _playerFogTiles = getFog(_playerVisibleTiles);
@@ -113,13 +113,20 @@ public class GameController : MonoBehaviour
         if(_playerTiles.Contains(positionxy))
         {
             //if empty tile, fill in with this player's roots
-            if(_tiles[position.x, position.y].PlayerId == -1)
+            if(_tiles[position.x, position.y].AboveType != AboveTileType.TreeRootsDead && _tiles[position.x, position.y].PlayerId == -1)
             {        
+                AddResource(_tiles[position.x, position.y]);
                 _tiles[position.x, position.y].PlayerId = _playerTurn;
                 _tiles[position.x, position.y].AboveType = AboveTileType.TreeRoots;
             }
             //else, if another player's roots, remove them
             else if(_tiles[position.x, position.y].PlayerId != _playerTurn)
+            {
+                RemoveResource(_tiles[position.x, position.y]);
+                _tiles[position.x, position.y].PlayerId = -1;
+                _tiles[position.x, position.y].AboveType = AboveTileType.MAX;
+            }
+            else if(_tiles[position.x, position.y].AboveType == AboveTileType.TreeRootsDead)
             {
                 _tiles[position.x, position.y].PlayerId = -1;
                 _tiles[position.x, position.y].AboveType = AboveTileType.MAX;
@@ -139,6 +146,20 @@ public class GameController : MonoBehaviour
         _areTilesDirty = validMove;
 
         return validMove;
+    }
+
+    private void AddResource(RootTileData tile){
+        if(tile.GroundType == GroundTileType.WaterTile || tile.GroundType == GroundTileType.RichSoilTile){
+            _players[_playerTurn].NumMoves++;
+        }
+    }
+
+    private void RemoveResource(RootTileData tile){
+        if(tile.GroundType == GroundTileType.WaterTile || tile.GroundType == GroundTileType.RichSoilTile){
+            if(tile.AboveType != AboveTileType.TreeRootsDead){
+                _players[tile.PlayerId].NumMoves--;
+            }
+        }
     }
 
     private HashSet<Vector2Int> giveValidTiles(int playerID)
@@ -287,6 +308,7 @@ public class GameController : MonoBehaviour
             {
                 if (_tiles[i, j].PlayerId == _playerTurn && !(connectedRoots.Contains(new Vector2Int(i, j))))
                 {
+                    RemoveResource(_tiles[i, j]);
                     _tiles[i, j].AboveType = AboveTileType.TreeRootsDead;
                     _tiles[i, j].PlayerId = -1;
                     //tilesToKill.Add(new Vector2Int(i, j));
@@ -392,6 +414,10 @@ public class GameController : MonoBehaviour
         if(_playerTurn >= _numPlayers){
             _playerTurn = 0;
         }
+        
+        Vector2Int playerTree = (Vector2Int)GetPlayerTreePosition(_playerTurn);
+        HashSet<Vector2Int> connectedTiles = findConnectedRoots(playerTree, _playerTurn);
+        KillRoots(connectedTiles, _playerTurn);
 
         _movesThisTurn = _players[_playerTurn].NumMoves;
     }
