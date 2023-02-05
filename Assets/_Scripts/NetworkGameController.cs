@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ExitGames.Client.Photon;
 using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine;
@@ -57,7 +58,7 @@ public class NetworkGameController : MonoBehaviourPunCallbacks
         roomOptions.IsVisible = false;
         roomOptions.MaxPlayers = gameParameters.NumPlayers;
         _currentGameParameters = gameParameters;
-        FillRoomPropertiesWithGameParams(roomOptions, gameParameters);
+        roomOptions.CustomRoomProperties = GetHashtablePropertiesWithGameParams(gameParameters);
 
         PhotonNetwork.CreateRoom(roomName.ToString(), roomOptions);
     }
@@ -67,13 +68,16 @@ public class NetworkGameController : MonoBehaviourPunCallbacks
         PhotonNetwork.JoinRoom(code);
     }
 
-    public void FillRoomPropertiesWithGameParams(RoomOptions roomOptions, GameLogic.GameParameters gameParameters)
+    public Hashtable GetHashtablePropertiesWithGameParams(GameLogic.GameParameters gameParameters)
     {
+        var hashtable = new Hashtable();
         var fields = typeof(GameLogic.GameParameters).GetFields();
         foreach (var field in fields)
         {
-            roomOptions.CustomRoomProperties[field.Name] = field.GetValue(gameParameters);
+            hashtable.Add(field.Name, field.GetValue(gameParameters));
         }
+
+        return hashtable;
     }
     
     public GameLogic.GameParameters GetCurrentRoomGameParams()
