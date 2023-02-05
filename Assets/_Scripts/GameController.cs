@@ -395,7 +395,7 @@ public class GameController : MonoBehaviour
         HashSet<Vector2Int> fogTiles = new HashSet<Vector2Int>();
         foreach (Vector2Int tile in AllTilesIter)
         {
-            if (!visibleTiles.Contains(new Vector2Int(tile.x, tile.y)) && !(_tiles[tile.x, tile.y].AboveType == AboveTileType.Tree))
+            if (!visibleTiles.Contains(new Vector2Int(tile.x, tile.y)) && !(_tiles[tile.x, tile.y].AboveType == AboveTileType.Tree) && !(_tiles[tile.x, tile.y].GroundType == GroundTileType.None))
             {
                 fogTiles.Add(new Vector2Int(tile.x, tile.y));
                 //_tiles[tile.x, tile.y].GroundType = GroundTileType.OverlayTile;
