@@ -44,6 +44,10 @@ public class GameController : MonoBehaviour
 
     private HashSet<Vector2Int> _playerTiles;
 
+    private HashSet<Vector2Int> _playerVisibleTiles;
+
+    private HashSet<Vector2Int> _playerFogTiles;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -77,9 +81,11 @@ public class GameController : MonoBehaviour
             _areTilesDirty = false;
             KillRoots(connectedTiles, _playerTurn);
             _playerTiles = giveValidTiles(_playerTurn);
+            _playerVisibleTiles = giveSeenTiles(_playerTurn);
+            _playerFogTiles = getFog(_playerVisibleTiles);
             //List<Vector2Int> playerTilesList = playerTiles.ToList();
             //MapController.SetMap(_tiles, findConnectedRoots((Vector2Int)GetPlayerTreePosition(_playerTurn), _playerTurn)); // Used for testing, highlights connected roots
-            MapController.SetMap(_tiles, _playerTiles);
+            MapController.SetMap(_tiles, _playerTiles, _playerFogTiles);
             //MapController.SetMap(_tiles, new[] { new Vector2Int(_random.Next(MapWidth), _random.Next(MapHeight)), new Vector2Int(3, 4) });
         }
     }
@@ -273,7 +279,7 @@ public class GameController : MonoBehaviour
     // Turns unconnected roots into dead roots
     private void KillRoots(HashSet<Vector2Int> connectedRoots, int playerID)
     {
-        Debug.Log(playerID);
+        //Debug.Log(playerID);
         //HashSet<Vector2Int> tilesToKill = new HashSet<Vector2Int>();
         for (int i = 0; i < MapWidth; i++) // Adds valid tiles
         {
@@ -287,6 +293,84 @@ public class GameController : MonoBehaviour
                 }
             }
         }
+    }
+
+    private HashSet<Vector2Int> giveSeenTiles(int playerID)
+    {
+        HashSet<Vector2Int> validTiles = new HashSet<Vector2Int>();
+        for (int i = 0; i < MapWidth; i++) // Adds valid tiles
+        {
+            for (int j = 0; j < MapHeight; j++)
+            {
+                if (_tiles[i, j].PlayerId == _playerTurn)
+                {
+                    var polarity = _zeroIsOddColumn ? 1 : 0;
+                    if (i % 2 == polarity) // Not an offset column
+                    {
+                        tryAddTwice(validTiles, i - 1, j - 1); // Lower left tile
+                        tryAddTwice(validTiles, i - 1, j); // Upper left tile
+                        tryAddTwice(validTiles, i, j - 1); // Tile below
+                        tryAddTwice(validTiles, i, j + 1); // Tile above
+                        tryAddTwice(validTiles, i + 1, j - 1); // Lower right tile
+                        tryAddTwice(validTiles, i + 1, j); // Upper right tile
+
+                    }
+                    else // Offset column
+                    {
+                        tryAddTwice(validTiles, i - 1, j); // Lower left tile
+                        tryAddTwice(validTiles, i - 1, j + 1); // Upper left tile
+                        tryAddTwice(validTiles, i, j - 1); // Tile below
+                        tryAddTwice(validTiles, i, j + 1); // Tile above
+                        tryAddTwice(validTiles, i + 1, j); // Lower right tile
+                        tryAddTwice(validTiles, i + 1, j + 1); // Upper right tile
+                    }
+
+                }
+            }
+            
+        }
+        return validTiles;
+    }
+    private void tryAddTwice(HashSet<Vector2Int> setToAdd, int x, int y) // Adds position to a list while checking if it's in bounds twice
+    {
+        if (AllTilesBounds.Contains(new Vector2Int(x, y)))
+        {
+            setToAdd.Add(new Vector2Int(x, y));
+            var polarity = _zeroIsOddColumn ? 1 : 0;
+            if (x % 2 == polarity) // Not an offset column
+            {
+                tryAdd(setToAdd, x - 1, y - 1); // Lower left tile
+                tryAdd(setToAdd, x - 1, y); // Upper left tile
+                tryAdd(setToAdd, x, y - 1); // Tile below
+                tryAdd(setToAdd, x, y + 1); // Tile above
+                tryAdd(setToAdd, x + 1, y - 1); // Lower right tile
+                tryAdd(setToAdd, x + 1, y); // Upper right tile
+
+            }
+            else // Offset column
+            {
+                tryAdd(setToAdd, x - 1, y); // Lower left tile
+                tryAdd(setToAdd, x - 1, y + 1); // Upper left tile
+                tryAdd(setToAdd, x, y - 1); // Tile below
+                tryAdd(setToAdd, x, y + 1); // Tile above
+                tryAdd(setToAdd, x + 1, y); // Lower right tile
+                tryAdd(setToAdd, x + 1, y + 1); // Upper right tile
+            }
+        }
+    }
+
+    private HashSet<Vector2Int> getFog(HashSet<Vector2Int> visibleTiles)
+    {
+        HashSet<Vector2Int> fogTiles = new HashSet<Vector2Int>();
+        foreach (Vector2Int tile in AllTilesIter)
+        {
+            if (visibleTiles.Contains(new Vector2Int(tile.x, tile.y)) || _tiles[tile.x, tile.y].AboveType == AboveTileType.Tree)
+            {
+                fogTiles.Add(new Vector2Int(tile.x, tile.y));
+                //_tiles[tile.x, tile.y].GroundType = GroundTileType.OverlayTile;
+            }
+        }
+        return fogTiles;
     }
 
     private void InitializePlayers(){

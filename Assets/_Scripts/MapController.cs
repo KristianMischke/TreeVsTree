@@ -123,15 +123,15 @@ public class MapController : MonoBehaviour
         }
     }
 
-    public void SetMap(RootTileData[,] tiles, IEnumerable<Vector2Int> tileOverlayPositions)
+    public void SetMap(RootTileData[,] tiles, IEnumerable<Vector2Int> tileOverlayPositions, HashSet<Vector2Int> tileFogPositions)
     {
         // update ground tilemap
-        GetPositionsAndTiles(tiles, GetGroundAsset, out var positions, out var tileBases);
+        GetPositionsAndTiles(tiles, GetGroundAsset, tileFogPositions, false, out var positions, out var tileBases);
         GroundTilemap.ClearAllTiles();
         GroundTilemap.SetTiles(positions, tileBases);
         
         // update above tilemap
-        GetPositionsAndTiles(tiles, GetAboveAsset, out positions, out tileBases);
+        GetPositionsAndTiles(tiles, GetAboveAsset, tileFogPositions, true, out positions, out tileBases);
         AboveTilemap.ClearAllTiles();
         AboveTilemap.SetTiles(positions, tileBases);
 
@@ -153,6 +153,22 @@ public class MapController : MonoBehaviour
             overlayObject.DOColor(new Color(1f, 1f, 1f, 0.5f), 0.6f).SetLoops(-1, LoopType.Yoyo);
         }
 
+        /*foreach (var gridPos in tileFogPositions)
+        {
+            var hexPosition = GridToHexPos(gridPos);
+            if (!_overlayObjects.TryGetValue(hexPosition, out var overlayObject))
+            {
+                overlayObject = _tileOverlayReleasePool.Get();
+                _overlayObjects[hexPosition] = overlayObject;
+            }
+
+            remainingOverlays.Remove(hexPosition);
+            overlayObject.transform.position = _grid.CellToWorld(hexPosition);
+            overlayObject.color = new Color(0f, 0f, 0f, 1f);
+            overlayObject.DOKill();
+            //overlayObject.DOColor(new Color(1f, 1f, 1f, 0.5f), 0.6f).SetLoops(-1, LoopType.Yoyo);
+        }*/
+
         foreach (var hexPos in remainingOverlays)
         {
             _tileOverlayReleasePool.Release(_overlayObjects[hexPos]);
@@ -160,18 +176,20 @@ public class MapController : MonoBehaviour
         }
     }
 
-    private void GetPositionsAndTiles(RootTileData[,] tiles, Func<RootTileData, TileBase> getAsset, out Vector3Int[] positions, out TileBase[] tileBases)
+    private void GetPositionsAndTiles(RootTileData[,] tiles, Func<RootTileData, TileBase> getAsset, HashSet<Vector2Int> fogTiles, bool calcFog, out Vector3Int[] positions, out TileBase[] tileBases)
     {
         positions = new Vector3Int[tiles.Length];
         tileBases = new TileBase[tiles.Length];
 
         int i = 0;
-        var rect = new RectInt(Vector2Int.zero, new Vector2Int(tiles.GetLength(0), tiles.GetLength(1))); 
+        var rect = new RectInt(Vector2Int.zero, new Vector2Int(tiles.GetLength(0), tiles.GetLength(1)));
         foreach (var gridPos in rect.allPositionsWithin)
         {
-            positions[i] = GridToHexPos(gridPos);
-            tileBases[i] = getAsset.Invoke(tiles[gridPos.x, gridPos.y]);
-            i++;
+            if (calcFog == false || fogTiles.Contains(gridPos)) {
+                positions[i] = GridToHexPos(gridPos);
+                tileBases[i] = getAsset.Invoke(tiles[gridPos.x, gridPos.y]);
+                i++;
+            }
         }
     }
 

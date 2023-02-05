@@ -12,6 +12,7 @@ public enum GroundTileType
     TestTile,           // TODO: remove 
     TestTileYellow,     // TODO: remove
     WaterTile,
+    OverlayTile, // Placeholder for fog
 
     MAX
 }
