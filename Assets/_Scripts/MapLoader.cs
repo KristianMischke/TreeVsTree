@@ -71,4 +71,8 @@ public class MapLoader : MonoBehaviour
         NetworkGameController.Instance.CreateRoomWithSettings(logic);
     }
 
+    public void joinGame(string code){
+        NetworkGameController.Instance.JoinRoomWithCode(code);
+    }
+
 }
