@@ -102,7 +102,7 @@ public class MapController : MonoBehaviour
         sbyte playerId = -1;
         if (aboveTileBase != null)
         {
-            var playerIdPattern = new Regex(@"^(?<tileName>\w+)(?<playerId>\d+)$");
+            var playerIdPattern = new Regex(@"^(?<tileName>\w+)(?<playerId>\d+)?$");
             var match = playerIdPattern.Match(aboveTileBase.name);
             if (match.Success)
             {
