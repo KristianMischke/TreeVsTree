@@ -106,7 +106,10 @@ public class MapController : MonoBehaviour
             var match = playerIdPattern.Match(aboveTileBase.name);
             if (match.Success)
             {
-                sbyte.TryParse(match.Groups["playerId"].Value, out playerId);
+                if (!sbyte.TryParse(match.Groups["playerId"].Value, out playerId))
+                {
+                    playerId = -1;
+                }
             }
             Enum.TryParse(match.Groups["tileName"].Value, out aboveType);
         }
