@@ -109,12 +109,14 @@ public class GameController : MonoBehaviour
             //if empty tile, fill in with this player's roots
             if(_tiles[position.x, position.y].PlayerId == -1)
             {        
+                AddResource(_tiles[position.x, position.y]);
                 _tiles[position.x, position.y].PlayerId = _playerTurn;
                 _tiles[position.x, position.y].AboveType = AboveTileType.TreeRoots;
             }
             //else, if another player's roots, remove them
             else if(_tiles[position.x, position.y].PlayerId != _playerTurn)
             {
+                RemoveResource(_tiles[position.x, position.y]);
                 _tiles[position.x, position.y].PlayerId = -1;
                 _tiles[position.x, position.y].AboveType = AboveTileType.MAX;
             }
@@ -133,6 +135,18 @@ public class GameController : MonoBehaviour
         _areTilesDirty = validMove;
 
         return validMove;
+    }
+
+    private void AddResource(RootTileData tile){
+        if(tile.GroundType == GroundTileType.WaterTile || tile.GroundType == GroundTileType.RichSoilTile){
+            _players[_playerTurn].NumMoves++;
+        }
+    }
+
+    private void RemoveResource(RootTileData tile){
+        if(tile.GroundType == GroundTileType.WaterTile || tile.GroundType == GroundTileType.RichSoilTile){
+            _players[tile.PlayerId].NumMoves--;
+        }
     }
 
     private HashSet<Vector2Int> giveValidTiles(int playerID)
