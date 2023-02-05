@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class GameLogic
 {
@@ -26,8 +27,8 @@ public class GameLogic
         public int TilesForVictory;
         public bool FogOfWarEnabled;
         
-        public int FirstPlayerTurnCount;
-        public int OtherPlayersTurnCount;
+        public int FirstPlayerFirstTurnCount;
+        public int PlayerDefaultTurnCount;
     }
 
     public static GameParameters DefaultParameters = new GameParameters()
@@ -36,8 +37,8 @@ public class GameLogic
         TilesForVictory = 20,
         FogOfWarEnabled = true,
 
-        OtherPlayersTurnCount = 2,
-        FirstPlayerTurnCount = 1
+        PlayerDefaultTurnCount = 2,
+        FirstPlayerFirstTurnCount = 1
     };
 
     private readonly GameParameters _parameters;
@@ -51,6 +52,7 @@ public class GameLogic
 
     public bool GameOver => _victoryPlayer >= 0;
     public sbyte Winner => _victoryPlayer;
+    public sbyte CurrentTurn => _currentPlayer;
 
     public int MapWidth => _tiles.GetLength(0);
     public int MapHeight => _tiles.GetLength(1);
@@ -59,6 +61,7 @@ public class GameLogic
         new RectInt(Vector2Int.zero, new Vector2Int(MapWidth, MapHeight));
 
     public RectInt.PositionEnumerator AllTilesPositionIter => AllTilesBounds.allPositionsWithin;
+    public RootTileData[,] Tiles => _tiles;
 
     public GameLogic(GameParameters parameters, RootTileData[,] map, bool zeroIsOddColumn)
     {
@@ -68,7 +71,7 @@ public class GameLogic
 
         InitializePlayers();
         _currentPlayer = 0;
-        _remainingMovesThisTurn = _players[_currentPlayer].NumMoves;
+        _remainingMovesThisTurn = _parameters.FirstPlayerFirstTurnCount;
     }
 
     public bool DoAction(PlayerActions playerActions, Vector2Int position)
@@ -189,7 +192,7 @@ public class GameLogic
         return result;
     }
 
-    private HashSet<Vector2Int> GetValidRootGrowthTiles(sbyte playerID)
+    public HashSet<Vector2Int> GetValidRootGrowthTiles(sbyte playerID)
     {
         HashSet<Vector2Int> validTiles = new HashSet<Vector2Int>();
         foreach (var pos in AllTilesPositionIter)
@@ -243,7 +246,8 @@ public class GameLogic
         connectedTiles.Add(position);
         foreach (var adjacentPos in GetAdjacentPositions(position))
         {
-            if(_tiles[adjacentPos.x, adjacentPos.y].PlayerId == playerId)
+            if (AllTilesBounds.Contains(adjacentPos)
+                && _tiles[adjacentPos.x, adjacentPos.y].PlayerId == playerId)
             {
                 GetConnectedRoots(adjacentPos, playerId, connectedTiles);
             }
@@ -267,7 +271,7 @@ public class GameLogic
         }
     }
 
-    private HashSet<Vector2Int> GetSeenTiles(int playerId)
+    public HashSet<Vector2Int> GetSeenTiles(sbyte playerId)
     {
         HashSet<Vector2Int> seenTiles = new HashSet<Vector2Int>();
         foreach (var pos in AllTilesPositionIter) // Adds valid tiles
@@ -289,8 +293,12 @@ public class GameLogic
         return seenTiles;
     }
 
-    private HashSet<Vector2Int> GetFogPositions(HashSet<Vector2Int> visibleTiles)
+    public HashSet<Vector2Int> GetFogPositions(sbyte playerId)
     {
+        if (!_parameters.FogOfWarEnabled)
+            return new HashSet<Vector2Int>();
+        
+        var visibleTiles = GetSeenTiles(playerId);
         HashSet<Vector2Int> fogTiles = new HashSet<Vector2Int>();
         foreach (Vector2Int tile in AllTilesPositionIter)
         {
@@ -315,7 +323,7 @@ public class GameLogic
             {
                 Id = i,
                 TilesControlled = 1,
-                NumMoves = i == 0 ? _parameters.FirstPlayerTurnCount : _parameters.OtherPlayersTurnCount,
+                NumMoves = _parameters.PlayerDefaultTurnCount,
             };
         }
     }
