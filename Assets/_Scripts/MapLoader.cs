@@ -11,6 +11,7 @@ public class MapLoader : MonoBehaviour
     public bool fogOfWar;
     public int startingMoves;
     public int tilesToWin;
+    public bool rabbitsMode;
 
     // Start is called before the first frame update
     void Start()
@@ -19,6 +20,7 @@ public class MapLoader : MonoBehaviour
         fogOfWar = true;
         startingMoves = 2;
         tilesToWin = 40;
+        rabbitsMode = false;
     }
 
     // Update is called once per frame
@@ -45,6 +47,9 @@ public class MapLoader : MonoBehaviour
             tilesToWin = 40;
         }
     }
+    public void setRabbits(bool rabbit){
+        rabbitsMode = rabbit;
+    }
 
     public void SwapScene(int sceneIndex){
         index = sceneIndex;
@@ -66,6 +71,8 @@ public class MapLoader : MonoBehaviour
             
             PlayerDefaultTurnCount = startingMoves,
             FirstPlayerFirstTurnCount = startingMoves - 1,
+
+            RabbitEnabled = rabbitsMode,
         };
 
         NetworkGameController.Instance.CreateRoomWithSettings(logic);
