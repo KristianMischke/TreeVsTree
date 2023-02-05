@@ -39,9 +39,18 @@ public class MapLoader : MonoBehaviour
             startingMoves = 2;
         }
     }
+    public void setWinTiles(string toWin){
+        int.TryParse(toWin, out tilesToWin);
+        if(tilesToWin <= 0){
+            tilesToWin = 40;
+        }
+    }
 
     public void SwapScene(int sceneIndex){
         SceneManager.LoadScene(sceneIndex);
+    }
+    public void SwapScene(){
+        SceneManager.LoadScene(index);
     }
 
 
