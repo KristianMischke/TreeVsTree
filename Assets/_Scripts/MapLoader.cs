@@ -35,14 +35,40 @@ public class MapLoader : MonoBehaviour
     }
     public void setMoves(string moves){
         int.TryParse(moves, out startingMoves);
-        if(startingMoves <= 0){
+        if(startingMoves <= 1){
             startingMoves = 2;
+        }
+    }
+    public void setWinTiles(string toWin){
+        int.TryParse(toWin, out tilesToWin);
+        if(tilesToWin <= 0){
+            tilesToWin = 40;
         }
     }
 
     public void SwapScene(int sceneIndex){
-        SceneManager.LoadScene(sceneIndex);
+        index = sceneIndex;
+        SwapScene();
+    }
+    public void SwapScene(){
+        SubmitSettings();
+        SceneManager.LoadScene(index);
     }
 
+    private void SubmitSettings(){
+        GameLogic.GameParameters logic = new GameLogic.GameParameters
+        {
+            MapName = "Map" + index,
+        
+            NumPlayers = 2,
+            TilesForVictory = tilesToWin,
+            FogOfWarEnabled = fogOfWar,
+            
+            PlayerDefaultTurnCount = startingMoves,
+            FirstPlayerFirstTurnCount = startingMoves - 1,
+        };
+
+        NetworkGameController.Instance.CreateRoomWithSettings(logic);
+    }
 
 }
