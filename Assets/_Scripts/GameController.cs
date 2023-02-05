@@ -32,6 +32,8 @@ public class GameController : MonoBehaviour
 
     public int MapWidth => _tiles.GetLength(0);
     public int MapHeight => _tiles.GetLength(1);
+    public RectInt AllTilesBounds =>
+        new RectInt(Vector2Int.zero, new Vector2Int(MapWidth, MapHeight));
     public RectInt.PositionEnumerator AllTilesIter =>
         new RectInt(Vector2Int.zero, new Vector2Int(MapWidth, MapHeight)).allPositionsWithin;
 
