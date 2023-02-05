@@ -211,7 +211,7 @@ public class GameController : MonoBehaviour
         {
             for (int j = 0; j < MapHeight; j++)
             {
-                if (_tiles[i, j].PlayerId == _playerTurn || _tiles[i,j].GroundType == GroundTileType.MountainTile)
+                if (_tiles[i, j].PlayerId == _playerTurn || _tiles[i, j].GroundType == GroundTileType.MountainTile || _tiles[i, j].GroundType == GroundTileType.None)
                 {
                     validTiles.Remove(new Vector2Int(i, j));
                 }
