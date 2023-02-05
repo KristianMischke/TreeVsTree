@@ -70,6 +70,7 @@ public class GameLogic
         _zeroIsOddColumn = zeroIsOddColumn;
 
         InitializePlayers();
+        _victoryPlayer = -1;
         _currentPlayer = 0;
         _remainingMovesThisTurn = _parameters.FirstPlayerFirstTurnCount;
     }
