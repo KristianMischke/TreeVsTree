@@ -82,16 +82,16 @@ public class NetworkGameController : MonoBehaviourPunCallbacks
     
     public GameLogic.GameParameters GetCurrentRoomGameParams()
     {
-        GameLogic.GameParameters currentParams = new GameLogic.GameParameters();
+        object boxedParams = new GameLogic.GameParameters();
         foreach (var roomProperty in PhotonNetwork.CurrentRoom.CustomProperties)
         {
             var fieldInfo = typeof(GameLogic.GameParameters).GetField((string)roomProperty.Key);
             if (fieldInfo != null)
             {
-                fieldInfo.SetValue(currentParams, roomProperty.Value);
+                fieldInfo.SetValue(boxedParams, roomProperty.Value);
             }
         }
-        return currentParams;
+        return (GameLogic.GameParameters)boxedParams;
     }
 
     public override void OnJoinRoomFailed(short returnCode, string message)
@@ -107,18 +107,20 @@ public class NetworkGameController : MonoBehaviourPunCallbacks
         {
             _currentGameParameters = GetCurrentRoomGameParams();
         }
-        var loadingScene = SceneManager.LoadSceneAsync(_currentGameParameters.MapName);
-        loadingScene.completed += LoadedIntoMap;
+        else
+        {
+            var loadingScene = SceneManager.LoadSceneAsync(_currentGameParameters.MapName);
+            loadingScene.completed += MasterLoadedIntoMap;
+        }
     }
 
-    private void LoadedIntoMap(AsyncOperation asyncOperation)
+    private void MasterLoadedIntoMap(AsyncOperation asyncOperation)
     {
-        UIController.Instance.ShowRoomCode(PhotonNetwork.CurrentRoom.Name);
-        
         if (LocalTesting)
         {
-            photonView.RPC(nameof(StartGame), RpcTarget.All);
+            StartGame();
         }
+        UIController.Instance.ShowRoomCode(PhotonNetwork.CurrentRoom.Name);
     }
     
     public override void OnPlayerEnteredRoom(Player newPlayer)
@@ -127,7 +129,7 @@ public class NetworkGameController : MonoBehaviourPunCallbacks
             && PhotonNetwork.IsMasterClient)
         {
             // if we're the master client and we have everyone in the room, tell everyone to start the game
-            photonView.RPC(nameof(StartGame), RpcTarget.All);
+            photonView.RPC(nameof(LoadIntoGame), RpcTarget.All);
         }
     }
     
@@ -142,6 +144,20 @@ public class NetworkGameController : MonoBehaviourPunCallbacks
     }
 
     [PunRPC]
+    public void LoadIntoGame()
+    {
+        if(!PhotonNetwork.IsMasterClient)
+        {
+            // master is already in the map
+            var loadingScene = SceneManager.LoadSceneAsync(_currentGameParameters.MapName);
+            loadingScene.completed += (x) => StartGame();
+        }
+        else
+        {
+            StartGame();
+        }
+    }
+    
     public void StartGame()
     {
         _mapController = FindObjectOfType<MapController>();
