@@ -140,7 +140,7 @@ public class NetworkGameController : MonoBehaviourPunCallbacks
         
         // TODO: show message in UI that they disconnected
 
-        // _gameLogic?.PlayerLeft(playerId);
+        _gameLogic?.PlayerLeft(playerId);
     }
 
     [PunRPC]
@@ -165,7 +165,7 @@ public class NetworkGameController : MonoBehaviourPunCallbacks
         _mapController.GetGameStateFromTilemap(out var tiles, out var zeroIsOddColumn);
         _mapController.OnHexCellClicked += OnTileClicked;
 
-        _gameLogic = new GameLogic(GameLogic.DefaultParameters, tiles, zeroIsOddColumn);
+        _gameLogic = new GameLogic(_currentGameParameters, tiles, zeroIsOddColumn);
         
         _thisPlayerId = (sbyte)(PhotonNetwork.LocalPlayer.ActorNumber - 1); // NOTE: THIS IS BAD NEED BETTER WAY TO MAP TO IDS
         Debug.Log($"I am playerId {_thisPlayerId}");
@@ -188,7 +188,7 @@ public class NetworkGameController : MonoBehaviourPunCallbacks
         if (_gameLogic.CurrentTurn == actingPlayer)
         {
             playerActionTiles = _gameLogic.GetValidRootGrowthTiles(actingPlayer);
-        }            
+        }
         
         var fogTiles = _gameLogic.GetFogPositions(actingPlayer);
         _mapController.SetMap(_gameLogic.Tiles, playerActionTiles, fogTiles);
