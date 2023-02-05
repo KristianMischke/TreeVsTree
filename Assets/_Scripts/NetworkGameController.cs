@@ -93,6 +93,7 @@ public class NetworkGameController : MonoBehaviourPunCallbacks
     public void OnJoinedRoomFailed(short returnCode, string message)
     {
         Debug.LogError($"OnJoinedRoomFailed {returnCode} {message}");
+        SceneManager.LoadScene("Main Menu");
     }
     
     public override void OnJoinedRoom()
