@@ -98,7 +98,7 @@ public class GameLogic
                 if(map[i,j].GroundType == GroundTileType.CarrotTile)
                 {
                     Debug.Log(i + " " + j);
-                    map[i, j].GroundType = GroundTileType.GrassTile;
+                    map[i, j].GroundType = GroundTileType.WaterTile;
                 }
                 if(map[i,j].AboveType == AboveTileType.Rabbit)
                 {
