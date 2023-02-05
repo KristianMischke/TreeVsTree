@@ -23,7 +23,9 @@ public class GameLogic
     [Serializable]
     public struct GameParameters
     {
-        public sbyte NumPlayers;
+        public string MapName;
+        
+        public byte NumPlayers;
         public int TilesForVictory;
         public bool FogOfWarEnabled;
         
@@ -33,6 +35,8 @@ public class GameLogic
 
     public static GameParameters DefaultParameters = new GameParameters()
     {
+        MapName = "Map1",
+        
         NumPlayers = 2,
         TilesForVictory = 20,
         FogOfWarEnabled = true,
