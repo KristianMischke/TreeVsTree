@@ -23,6 +23,7 @@ public class GameController : MonoBehaviour
 
     private int _tilesForVictory = 20;
     private int _turnNumber = 0;
+    private int _movesThisTurn;
 
     private sbyte _numPlayers = 2;
     private sbyte _playerTurn = 0;
@@ -49,6 +50,8 @@ public class GameController : MonoBehaviour
         _random = new Random();
         MapController.GetGameStateFromTilemap(out _tiles, out _zeroIsOddColumn);
         InitializePlayers();
+
+        _movesThisTurn = _players[_playerTurn].NumMoves;
     }
 
     private void OnDestroy()
@@ -63,6 +66,12 @@ public class GameController : MonoBehaviour
         {
             Vector2Int playerTree = (Vector2Int)GetPlayerTreePosition(_playerTurn);
             HashSet<Vector2Int> connectedTiles = findConnectedRoots(playerTree, _playerTurn);
+            var victoryCheck = CheckVictory();
+            if (victoryCheck != -1)
+            {
+                Debug.Log($"PLAYER {victoryCheck} WON");
+            }
+            
             _areTilesDirty = false;
             KillRoots(connectedTiles, _playerTurn);
             _playerTiles = giveValidTiles(_playerTurn);
@@ -80,7 +89,11 @@ public class GameController : MonoBehaviour
         PlayerWon = (sbyte) CheckVictory();
 
         if(_areTilesDirty){
-            NextTurn();
+            _movesThisTurn--;
+
+            if(_movesThisTurn <= 0){
+                NextTurn();
+            }
         }
     }
 
@@ -271,6 +284,8 @@ public class GameController : MonoBehaviour
         if(_playerTurn >= _numPlayers){
             _playerTurn = 0;
         }
+
+        _movesThisTurn = _players[_playerTurn].NumMoves;
     }
 
     private Vector2Int? GetPlayerTreePosition(sbyte playerId)
