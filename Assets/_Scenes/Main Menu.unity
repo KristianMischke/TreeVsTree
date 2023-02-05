@@ -3309,6 +3309,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Parameters:
+    seed: 0
     MapName: Map1
     NumPlayers: 2
     TilesForVictory: 20
@@ -4072,7 +4073,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Parameters:
-    MapName: Map3
+    seed: 0
+    MapName: Map4
     NumPlayers: 2
     TilesForVictory: 20
     FogOfWarEnabled: 1
@@ -4796,6 +4798,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Parameters:
+    seed: 0
     MapName: Map2
     NumPlayers: 2
     TilesForVictory: 20
@@ -5360,7 +5363,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1705119196
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5522,6 +5525,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Parameters:
+    seed: 0
     MapName: Map3
     NumPlayers: 2
     TilesForVictory: 20
