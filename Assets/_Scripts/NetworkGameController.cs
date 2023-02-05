@@ -69,10 +69,10 @@ public class NetworkGameController : MonoBehaviourPunCallbacks
 
     public void FillRoomPropertiesWithGameParams(RoomOptions roomOptions, GameLogic.GameParameters gameParameters)
     {
-        var properties = typeof(GameLogic.GameParameters).GetProperties();
-        foreach (var property in properties)
+        var fields = typeof(GameLogic.GameParameters).GetFields();
+        foreach (var field in fields)
         {
-            roomOptions.CustomRoomProperties[property.Name] = property.GetValue(gameParameters);
+            roomOptions.CustomRoomProperties[field.Name] = field.GetValue(gameParameters);
         }
     }
     
@@ -81,10 +81,10 @@ public class NetworkGameController : MonoBehaviourPunCallbacks
         GameLogic.GameParameters currentParams = new GameLogic.GameParameters();
         foreach (var roomProperty in PhotonNetwork.CurrentRoom.CustomProperties)
         {
-            var propertyInfo = typeof(GameLogic.GameParameters).GetProperty((string)roomProperty.Key);
-            if (propertyInfo != null)
+            var fieldInfo = typeof(GameLogic.GameParameters).GetField((string)roomProperty.Key);
+            if (fieldInfo != null)
             {
-                propertyInfo.SetValue(currentParams, roomProperty.Value);
+                fieldInfo.SetValue(currentParams, roomProperty.Value);
             }
         }
         return currentParams;
