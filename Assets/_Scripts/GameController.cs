@@ -83,6 +83,7 @@ public class GameController : MonoBehaviour
             _playerTiles = giveValidTiles(_playerTurn);
             _playerVisibleTiles = giveSeenTiles(_playerTurn);
             _playerFogTiles = getFog(_playerVisibleTiles);
+            //_playerFogTiles = new HashSet<Vector2Int>(); // Disables fog, used for testing
             //List<Vector2Int> playerTilesList = playerTiles.ToList();
             //MapController.SetMap(_tiles, findConnectedRoots((Vector2Int)GetPlayerTreePosition(_playerTurn), _playerTurn)); // Used for testing, highlights connected roots
             MapController.SetMap(_tiles, _playerTiles, _playerFogTiles);
@@ -386,7 +387,7 @@ public class GameController : MonoBehaviour
         HashSet<Vector2Int> fogTiles = new HashSet<Vector2Int>();
         foreach (Vector2Int tile in AllTilesIter)
         {
-            if (visibleTiles.Contains(new Vector2Int(tile.x, tile.y)) || _tiles[tile.x, tile.y].AboveType == AboveTileType.Tree)
+            if (!visibleTiles.Contains(new Vector2Int(tile.x, tile.y)) && !(_tiles[tile.x, tile.y].AboveType == AboveTileType.Tree))
             {
                 fogTiles.Add(new Vector2Int(tile.x, tile.y));
                 //_tiles[tile.x, tile.y].GroundType = GroundTileType.OverlayTile;
