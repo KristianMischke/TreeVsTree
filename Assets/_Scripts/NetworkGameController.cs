@@ -3,6 +3,7 @@ using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 using Random = System.Random;
 
 public class NetworkGameController : MonoBehaviourPunCallbacks
@@ -15,25 +16,37 @@ public class NetworkGameController : MonoBehaviourPunCallbacks
     private MapController _mapController;
     private Random _random;
 
+    [Header("TESTING ONLY")]
+    public bool LocalTesting = false;
+    public GameLogic.GameParameters TestingParameters;
+
     // Start is called before the first frame update
     void Awake()
     {
         if (Instance != null && Instance != this)
         {
-            Destroy(gameObject);
+            DestroyImmediate(gameObject);
             return;
         }
-        Instance = this;
         DontDestroyOnLoad(gameObject);
-        
+        Instance = this;
+
         _random = new Random();
-        _mapController = FindObjectOfType<MapController>();
+    }
+
+    void Start()
+    {
         PhotonNetwork.ConnectUsingSettings();
     }
     
     public override void OnConnectedToMaster()
     {
         Debug.Log("OnConnectedToMaster() was called by PUN.");
+
+        if (LocalTesting)
+        {
+            CreateRoomWithSettings(TestingParameters);
+        }
     }
 
     public void CreateRoomWithSettings(GameLogic.GameParameters gameParameters)
@@ -79,10 +92,16 @@ public class NetworkGameController : MonoBehaviourPunCallbacks
     
     public override void OnJoinedRoom()
     {
+        Debug.Log($"OnJoinedRoom");
         if (!PhotonNetwork.IsMasterClient)
         {
             _currentGameParameters = GetCurrentRoomGameParams();
-            SceneManager.LoadScene(_currentGameParameters.MapName);
+        }
+        var loadingScene = SceneManager.LoadSceneAsync(_currentGameParameters.MapName);
+
+        if (LocalTesting)
+        {
+            loadingScene.completed += (x) => { photonView.RPC(nameof(StartGame), RpcTarget.All); };
         }
     }
     
@@ -103,12 +122,14 @@ public class NetworkGameController : MonoBehaviourPunCallbacks
         
         // TODO: show message in UI that they disconnected
 
-        _gameLogic?.PlayerLeft(playerId);
+        // _gameLogic?.PlayerLeft(playerId);
     }
 
     [PunRPC]
     public void StartGame()
     {
+        _mapController = FindObjectOfType<MapController>();
+
         _mapController.GetGameStateFromTilemap(out var tiles, out var zeroIsOddColumn);
         _mapController.OnHexCellClicked += OnTileClicked;
 
@@ -121,7 +142,7 @@ public class NetworkGameController : MonoBehaviourPunCallbacks
     
     private void OnTileClicked(Vector2Int position)
     {
-        if (_gameLogic.CurrentTurn == _thisPlayerId)
+        if (_gameLogic.CurrentTurn == _thisPlayerId || LocalTesting)
         {
             photonView.RPC(nameof(DoTurnRPC), RpcTarget.All, GameLogic.PlayerActions.GrowRoot, position.x, position.y);
         }
@@ -130,14 +151,17 @@ public class NetworkGameController : MonoBehaviourPunCallbacks
     private void UpdateVisuals()
     {
         var playerActionTiles = new HashSet<Vector2Int>();
-        if (_gameLogic.CurrentTurn == _thisPlayerId)
+        var actingPlayer = LocalTesting ? _gameLogic.CurrentTurn : _thisPlayerId;
+
+        if (_gameLogic.CurrentTurn == actingPlayer)
         {
-            playerActionTiles = _gameLogic.GetValidRootGrowthTiles(_thisPlayerId);
-        }
-        var fogTiles = _gameLogic.GetFogPositions(_thisPlayerId);
+            playerActionTiles = _gameLogic.GetValidRootGrowthTiles(actingPlayer);
+        }            
+        
+        var fogTiles = _gameLogic.GetFogPositions(actingPlayer);
         _mapController.SetMap(_gameLogic.Tiles, playerActionTiles, fogTiles);
         
-        UIController.Instance.SetTurnText(_gameLogic.CurrentTurn == _thisPlayerId, _gameLogic.RemainingMovesThisTurn);
+        UIController.Instance.SetTurnText(_gameLogic.CurrentTurn == actingPlayer, _gameLogic.RemainingMovesThisTurn);
 
         if(_gameLogic.GameOver)
         {

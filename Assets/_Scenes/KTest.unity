@@ -1143,6 +1143,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4912920430745855956, guid: b385ff44da717fe4a8b004fbde9872c5, type: 3}
+      propertyPath: sceneViewId
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7229290617068371604, guid: b385ff44da717fe4a8b004fbde9872c5, type: 3}
       propertyPath: m_RootOrder
       value: 0
@@ -1199,9 +1203,38 @@ PrefabInstance:
       propertyPath: m_Name
       value: _GAME_CONTROLLER
       objectReference: {fileID: 0}
+    - target: {fileID: 7229290617068371610, guid: b385ff44da717fe4a8b004fbde9872c5, type: 3}
+      propertyPath: LocalTesting
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7229290617068371610, guid: b385ff44da717fe4a8b004fbde9872c5, type: 3}
+      propertyPath: LocalMultiplayer
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7229290617068371610, guid: b385ff44da717fe4a8b004fbde9872c5, type: 3}
+      propertyPath: TestingParameters.MapName
+      value: KTest
+      objectReference: {fileID: 0}
+    - target: {fileID: 7229290617068371610, guid: b385ff44da717fe4a8b004fbde9872c5, type: 3}
+      propertyPath: TestingParameters.NumPlayers
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7229290617068371610, guid: b385ff44da717fe4a8b004fbde9872c5, type: 3}
+      propertyPath: TestingParameters.TilesForVictory
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 7229290617068371610, guid: b385ff44da717fe4a8b004fbde9872c5, type: 3}
+      propertyPath: TestingParameters.PlayerDefaultTurnCount
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7229290617068371610, guid: b385ff44da717fe4a8b004fbde9872c5, type: 3}
+      propertyPath: TestingParameters.FirstPlayerFirstTurnCount
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7229290617068371611, guid: b385ff44da717fe4a8b004fbde9872c5, type: 3}
       propertyPath: sceneViewId
       value: 1
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 7229290617068371611, guid: b385ff44da717fe4a8b004fbde9872c5, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: b385ff44da717fe4a8b004fbde9872c5, type: 3}

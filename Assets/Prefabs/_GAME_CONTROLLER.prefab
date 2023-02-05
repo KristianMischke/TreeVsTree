@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7229290617068371604}
   - component: {fileID: 7229290617068371610}
-  - component: {fileID: 7229290617068371611}
+  - component: {fileID: 944162279991613552}
   m_Layer: 0
   m_Name: _GAME_CONTROLLER
   m_TagString: Untagged
@@ -44,7 +44,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c9f6c9869359fb346ac13a8c924a2e85, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &7229290617068371611
+  LocalTesting: 1
+  TestingParameters:
+    MapName: KTest
+    NumPlayers: 2
+    TilesForVictory: 20
+    FogOfWarEnabled: 0
+    FirstPlayerFirstTurnCount: 1
+    PlayerDefaultTurnCount: 2
+--- !u!114 &944162279991613552
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
